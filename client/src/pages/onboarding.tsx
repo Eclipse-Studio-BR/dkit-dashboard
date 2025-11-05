@@ -34,7 +34,6 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<OnboardingForm>({
-    resolver: zodResolver(step === 1 ? step1Schema : step === 2 ? step2Schema : step3Schema),
     defaultValues: {
       email: "",
       password: "",
@@ -46,20 +45,34 @@ export default function OnboardingPage() {
       mayaName: "",
       chainflipAddress: "",
     },
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
-  const onNext = async () => {
-    let isValid = false;
+  const validateStep = async () => {
+    const values = form.getValues();
     
-    if (step === 1) {
-      isValid = await form.trigger(["email", "password", "name", "logoUrl", "dappUrl"]);
-    } else if (step === 2) {
-      isValid = await form.trigger(["btcAddress"]);
-    } else {
-      isValid = await form.trigger(["thorName", "mayaName", "chainflipAddress"]);
+    try {
+      if (step === 1) {
+        step1Schema.parse(values);
+      } else if (step === 2) {
+        step2Schema.parse(values);
+      } else {
+        step3Schema.parse(values);
+      }
+      return true;
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        err.errors.forEach((error) => {
+          const field = error.path[0] as keyof OnboardingForm;
+          form.setError(field, { message: error.message });
+        });
+      }
+      return false;
     }
+  };
 
+  const onNext = async () => {
+    const isValid = await validateStep();
     if (isValid) {
       setStep(step + 1);
     }
@@ -68,7 +81,18 @@ export default function OnboardingPage() {
   const onSubmit = async (data: OnboardingForm) => {
     setIsLoading(true);
     try {
-      const { email, password, name, logoUrl, dappUrl, btcAddress, thorName, mayaName, chainflipAddress } = data;
+      const validationResult = fullSchema.safeParse(data);
+      
+      if (!validationResult.success) {
+        validationResult.error.errors.forEach((error) => {
+          const field = error.path[0] as keyof OnboardingForm;
+          form.setError(field, { message: error.message });
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      const { email, password, name, logoUrl, dappUrl, btcAddress, thorName, mayaName, chainflipAddress } = validationResult.data;
       
       const projectData: any = { name };
       if (logoUrl) projectData.logoUrl = logoUrl;
@@ -78,6 +102,8 @@ export default function OnboardingPage() {
       if (mayaName) projectData.mayaName = mayaName;
       if (chainflipAddress) projectData.chainflipAddress = chainflipAddress;
       
+      console.log("[ONBOARDING] Submitting registration:", { email, project: projectData });
+      
       await apiRequest("POST", "/api/auth/register", { email, password, project: projectData });
       toast({
         title: "Account created successfully",
@@ -85,6 +111,7 @@ export default function OnboardingPage() {
       });
       setLocation("/");
     } catch (error: any) {
+      console.error("[ONBOARDING] Registration error:", error);
       toast({
         title: "Registration failed",
         description: error.message || "Could not create account",
