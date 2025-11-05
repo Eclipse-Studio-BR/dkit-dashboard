@@ -54,7 +54,7 @@ export default function LoginPage() {
         <img 
           src={dkitLogo} 
           alt="dKit" 
-          className="h-8 w-auto"
+          className="h-[30px] w-[148px]"
         />
       </div>
       
