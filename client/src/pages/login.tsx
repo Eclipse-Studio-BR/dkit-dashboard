@@ -48,68 +48,88 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-card-border">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in to dKiT</CardTitle>
-          <CardDescription>Enter your email and password to access your dashboard</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="partner@example.com"
-                        data-testid="input-email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
-                        data-testid="input-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-sign-in">
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
-          </Form>
-          <div className="mt-4 text-center text-sm">
-            <span className="text-muted-foreground">New here? </span>
-            <button
-              onClick={() => setLocation("/onboarding")}
-              className="text-primary hover:underline font-medium"
-              data-testid="link-create-account"
-            >
-              Create an account
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-background/95 p-4">
+      <div className="p-6">
+        <img 
+          src="/attached_assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png" 
+          alt="dKit" 
+          className="h-8 w-auto"
+        />
+      </div>
+      
+      <div className="flex-1 flex items-center justify-center">
+        <Card className="w-full max-w-md border-card-border bg-card/50 backdrop-blur-sm">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold">Login</CardTitle>
+            <CardDescription>Login to access the dashboard</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Your email"
+                          data-testid="input-email"
+                          className="bg-background/50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Type password"
+                          data-testid="input-password"
+                          className="bg-background/50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex items-center justify-between">
+                  <Button type="submit" disabled={isLoading} data-testid="button-sign-in">
+                    {isLoading ? "Logging in..." : "Log in"}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setLocation("/onboarding")}
+                    className="text-sm text-primary hover:underline font-medium"
+                    data-testid="link-create-account"
+                  >
+                    Register
+                  </button>
+                </div>
+                
+                <div className="text-center">
+                  <button
+                    type="button"
+                    className="text-sm text-muted-foreground hover:text-primary"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

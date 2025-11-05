@@ -46,7 +46,11 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-6">
-        <h1 className="text-xl font-bold text-sidebar-foreground">kryptoLink</h1>
+        <img 
+          src="/attached_assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png" 
+          alt="dKit" 
+          className="h-8 w-auto"
+        />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
