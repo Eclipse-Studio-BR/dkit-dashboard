@@ -1,5 +1,9 @@
 import { type User, type InsertUser, type Project, type InsertProject, type MetricPoint, type Transaction } from "@shared/schema";
+import { users, projects, metricPoints, transactions } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import { eq, and, gte, lte, desc } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -194,4 +198,172 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DbStorage implements IStorage {
+  private db;
+
+  constructor() {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL is not set");
+    }
+    
+    const sql = neon(process.env.DATABASE_URL);
+    this.db = drizzle(sql);
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.id, id));
+    return result[0];
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.email, email));
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser, projectId: string): Promise<User> {
+    const result = await this.db.insert(users).values({
+      email: insertUser.email,
+      password: insertUser.password,
+      role: "PARTNER",
+      projectId,
+    }).returning();
+    return result[0];
+  }
+
+  async getProject(id: string): Promise<Project | undefined> {
+    const result = await this.db.select().from(projects).where(eq(projects.id, id));
+    return result[0];
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const result = await this.db.insert(projects).values({
+      name: insertProject.name,
+      logoUrl: insertProject.logoUrl || null,
+      dappUrl: insertProject.dappUrl || null,
+      btcAddress: insertProject.btcAddress || null,
+      thorName: insertProject.thorName || null,
+      mayaName: insertProject.mayaName || null,
+      chainflipAddress: insertProject.chainflipAddress || null,
+    }).returning();
+    
+    const project = result[0];
+    
+    await this.seedProjectMetrics(project.id);
+    await this.seedProjectTransactions(project.id);
+    
+    return project;
+  }
+
+  async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined> {
+    const result = await this.db.update(projects)
+      .set({
+        name: updates.name,
+        logoUrl: updates.logoUrl !== undefined ? updates.logoUrl || null : undefined,
+        dappUrl: updates.dappUrl !== undefined ? updates.dappUrl || null : undefined,
+        btcAddress: updates.btcAddress !== undefined ? updates.btcAddress || null : undefined,
+        thorName: updates.thorName !== undefined ? updates.thorName || null : undefined,
+        mayaName: updates.mayaName !== undefined ? updates.mayaName || null : undefined,
+        chainflipAddress: updates.chainflipAddress !== undefined ? updates.chainflipAddress || null : undefined,
+      })
+      .where(eq(projects.id, id))
+      .returning();
+    
+    return result[0];
+  }
+
+  async getMetrics(projectId: string, fromDate?: Date, toDate?: Date): Promise<MetricPoint[]> {
+    const conditions = [eq(metricPoints.projectId, projectId)];
+    
+    if (fromDate) {
+      conditions.push(gte(metricPoints.t, fromDate));
+    }
+    if (toDate) {
+      conditions.push(lte(metricPoints.t, toDate));
+    }
+
+    const result = await this.db
+      .select()
+      .from(metricPoints)
+      .where(and(...conditions))
+      .orderBy(metricPoints.t);
+    
+    return result;
+  }
+
+  async getTransactions(projectId: string, limit = 25): Promise<Transaction[]> {
+    const result = await this.db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.projectId, projectId))
+      .orderBy(desc(transactions.ts))
+      .limit(limit);
+    
+    return result;
+  }
+
+  private async seedProjectMetrics(projectId: string) {
+    const now = new Date();
+    const daysToGenerate = 30;
+    const metricsToInsert: (typeof metricPoints.$inferInsert)[] = [];
+
+    for (let i = daysToGenerate - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      
+      for (let hour = 0; hour < 24; hour++) {
+        const pointDate = new Date(date);
+        pointDate.setHours(hour, 0, 0, 0);
+
+        const baseVolume = 10000 + Math.random() * 15000;
+        const baseFees = baseVolume * (0.003 + Math.random() * 0.002);
+        const trades = Math.floor(20 + Math.random() * 40);
+
+        metricsToInsert.push({
+          projectId,
+          t: pointDate,
+          volumeUsd: baseVolume,
+          feesUsd: baseFees,
+          trades,
+        });
+      }
+    }
+
+    await this.db.insert(metricPoints).values(metricsToInsert);
+  }
+
+  private async seedProjectTransactions(projectId: string) {
+    const routes = ["BTC→ETH", "ETH→USDC", "USDC→BTC", "ETH→BTC", "BTC→USDT"];
+    const chains = ["THOR", "MAYA", "CHAINFLIP"];
+    const statuses = ["Completed", "Terminated"];
+    
+    const transactionCount = 6 + Math.floor(Math.random() * 4);
+    const transactionsToInsert: (typeof transactions.$inferInsert)[] = [];
+
+    for (let i = 0; i < transactionCount; i++) {
+      const hoursAgo = i * 2 + Math.random() * 2;
+      const ts = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
+      
+      const route = routes[Math.floor(Math.random() * routes.length)];
+      const chain = chains[Math.floor(Math.random() * chains.length)];
+      const status = i === 1 ? "Terminated" : statuses[Math.floor(Math.random() * statuses.length)];
+      
+      const usdNotional = 1000 + Math.random() * 5000;
+      const feeUsd = usdNotional * 0.003;
+
+      transactionsToInsert.push({
+        projectId,
+        ts,
+        route,
+        usdNotional,
+        feeUsd,
+        status,
+        txHash: `0x${randomUUID().replace(/-/g, '')}`,
+        chain,
+      });
+    }
+
+    await this.db.insert(transactions).values(transactionsToInsert);
+  }
+}
+
+export const storage = new DbStorage();
