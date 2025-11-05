@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import dkitLogo from "@assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -51,7 +52,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-background/95 p-4">
       <div className="p-6">
         <img 
-          src="/attached_assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png" 
+          src={dkitLogo} 
           alt="dKit" 
           className="h-8 w-auto"
         />

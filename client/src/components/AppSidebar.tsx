@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import type { MeResponse } from "@shared/schema";
+import dkitLogo from "@assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -47,7 +48,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-6">
         <img 
-          src="/attached_assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png" 
+          src={dkitLogo} 
           alt="dKit" 
           className="h-8 w-auto"
         />
