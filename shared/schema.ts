@@ -60,11 +60,20 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
 }).extend({
   name: z.string().min(1, "Project name is required"),
-  dappUrl: z.string().url("Must be a valid URL").startsWith("https://", "URL must start with https://").optional().or(z.literal("")),
-  btcAddress: z.string().regex(/^(1|3|bc1)[a-zA-Z0-9]{25,62}$/, "Invalid Bitcoin address").optional().or(z.literal("")),
-  thorName: z.string().regex(/^[a-z0-9-]{1,32}$/, "THORName must be lowercase letters, digits, and dashes only (1-32 chars)").optional().or(z.literal("")),
-  mayaName: z.string().regex(/^[a-z0-9-]{1,32}$/, "MayaName must be lowercase letters, digits, and dashes only (1-32 chars)").optional().or(z.literal("")),
-  chainflipAddress: z.string().optional().or(z.literal("")),
+  logoUrl: z.string().optional(),
+  dappUrl: z.string().optional().refine((val) => !val || (val.startsWith("https://") && z.string().url().safeParse(val).success), {
+    message: "Must be a valid HTTPS URL or empty"
+  }),
+  btcAddress: z.string().optional().refine((val) => !val || /^(1|3|bc1)[a-zA-Z0-9]{25,62}$/.test(val), {
+    message: "Invalid Bitcoin address"
+  }),
+  thorName: z.string().optional().refine((val) => !val || /^[a-z0-9-]{1,32}$/.test(val), {
+    message: "THORName must be lowercase letters, digits, and dashes only (1-32 chars)"
+  }),
+  mayaName: z.string().optional().refine((val) => !val || /^[a-z0-9-]{1,32}$/.test(val), {
+    message: "MayaName must be lowercase letters, digits, and dashes only (1-32 chars)"
+  }),
+  chainflipAddress: z.string().optional(),
 });
 
 // Types

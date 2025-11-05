@@ -36,6 +36,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth endpoints
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
+      console.log("[REGISTER] Request body:", JSON.stringify(req.body, null, 2));
+      
       const { email, password, project } = req.body;
 
       const userSchema = z.object({
@@ -44,17 +46,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const userData = userSchema.parse({ email, password });
+      console.log("[REGISTER] User data validated:", { email: userData.email });
 
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
 
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-
+      console.log("[REGISTER] Project data received:", JSON.stringify(project, null, 2));
       const projectData = insertProjectSchema.parse(project || {});
+      console.log("[REGISTER] Project data validated:", JSON.stringify(projectData, null, 2));
       const newProject = await storage.createProject(projectData);
 
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
       const user = await storage.createUser({ email: userData.email, password: hashedPassword }, newProject.id);
 
       req.session.userId = user.id;
@@ -64,7 +68,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         project: newProject,
       });
     } catch (error: any) {
+      console.log("[REGISTER] Error:", error);
       if (error instanceof z.ZodError) {
+        console.log("[REGISTER] Validation errors:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: error.message || "Registration failed" });

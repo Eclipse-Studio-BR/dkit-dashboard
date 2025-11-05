@@ -11,22 +11,19 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertUserSchema, insertProjectSchema } from "@shared/schema";
 
-const step1Schema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  dappUrl: z.string().url("Must be a valid URL").startsWith("https://", "URL must start with https://").optional().or(z.literal("")),
+const step1Schema = insertUserSchema.merge(
+  insertProjectSchema.pick({ name: true, logoUrl: true, dappUrl: true })
+);
+
+const step2Schema = insertProjectSchema.pick({ btcAddress: true });
+
+const step3Schema = insertProjectSchema.pick({ 
+  thorName: true, 
+  mayaName: true, 
+  chainflipAddress: true 
 });
 
-const step2Schema = z.object({
-  btcAddress: z.string().regex(/^(1|3|bc1)[a-zA-Z0-9]{25,62}$/, "Invalid Bitcoin address").optional().or(z.literal("")),
-});
-
-const step3Schema = z.object({
-  thorName: z.string().regex(/^[a-z0-9-]{1,32}$/, "THORName must be lowercase letters, digits, and dashes only (1-32 chars)").optional().or(z.literal("")),
-  mayaName: z.string().regex(/^[a-z0-9-]{1,32}$/, "MayaName must be lowercase letters, digits, and dashes only (1-32 chars)").optional().or(z.literal("")),
-  chainflipAddress: z.string().optional().or(z.literal("")),
-});
-
-const fullSchema = insertUserSchema.merge(step1Schema).merge(step2Schema).merge(step3Schema);
+const fullSchema = insertUserSchema.merge(insertProjectSchema);
 
 type OnboardingForm = z.infer<typeof fullSchema>;
 
@@ -37,11 +34,12 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<OnboardingForm>({
-    resolver: zodResolver(step === 1 ? insertUserSchema.merge(step1Schema) : step === 2 ? step2Schema : step3Schema),
+    resolver: zodResolver(step === 1 ? step1Schema : step === 2 ? step2Schema : step3Schema),
     defaultValues: {
       email: "",
       password: "",
       name: "",
+      logoUrl: "",
       dappUrl: "",
       btcAddress: "",
       thorName: "",
@@ -55,7 +53,7 @@ export default function OnboardingPage() {
     let isValid = false;
     
     if (step === 1) {
-      isValid = await form.trigger(["email", "password", "name", "dappUrl"]);
+      isValid = await form.trigger(["email", "password", "name", "logoUrl", "dappUrl"]);
     } else if (step === 2) {
       isValid = await form.trigger(["btcAddress"]);
     } else {
@@ -70,13 +68,22 @@ export default function OnboardingPage() {
   const onSubmit = async (data: OnboardingForm) => {
     setIsLoading(true);
     try {
-      const { email, password, ...projectData } = data;
+      const { email, password, name, logoUrl, dappUrl, btcAddress, thorName, mayaName, chainflipAddress } = data;
+      
+      const projectData: any = { name };
+      if (logoUrl) projectData.logoUrl = logoUrl;
+      if (dappUrl) projectData.dappUrl = dappUrl;
+      if (btcAddress) projectData.btcAddress = btcAddress;
+      if (thorName) projectData.thorName = thorName;
+      if (mayaName) projectData.mayaName = mayaName;
+      if (chainflipAddress) projectData.chainflipAddress = chainflipAddress;
+      
       await apiRequest("POST", "/api/auth/register", { email, password, project: projectData });
       toast({
         title: "Account created successfully",
         description: "Welcome to dKiT Partners Dashboard",
       });
-      setLocation("/dashboard");
+      setLocation("/");
     } catch (error: any) {
       toast({
         title: "Registration failed",
