@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard, Wallet, Settings, HelpCircle } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { LayoutDashboard, Wallet, Settings, HelpCircle, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/queryClient";
 import type { MeResponse } from "@shared/schema";
 
 const navItems = [
@@ -27,6 +29,19 @@ export function AppSidebar() {
   const { data: meData } = useQuery<MeResponse>({
     queryKey: ["/api/me"],
   });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/auth/logout", {});
+    },
+    onSuccess: () => {
+      setLocation("/login");
+    },
+  });
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -58,7 +73,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       {meData && (
-        <SidebarFooter className="p-4 border-t border-sidebar-border">
+        <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
               {meData.user.email.charAt(0).toUpperCase()}
@@ -72,6 +87,17 @@ export function AppSidebar() {
               </div>
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+            className="w-full group-data-[collapsible=icon]:w-auto"
+            data-testid="button-logout"
+          >
+            <LogOut className="w-4 h-4 group-data-[collapsible=icon]:mr-0 mr-2" />
+            <span className="group-data-[collapsible=icon]:hidden">Logout</span>
+          </Button>
         </SidebarFooter>
       )}
     </Sidebar>
