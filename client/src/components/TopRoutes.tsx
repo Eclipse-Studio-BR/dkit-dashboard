@@ -19,15 +19,18 @@ function RouteCard({ name, ticker, amount, change, logoUrl }: RouteCardProps) {
   return (
     <Card className="border-card-border">
       <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 flex items-center justify-center">
             <img 
               src={logoUrl} 
               alt={`${name} logo`} 
-              className="w-full h-full object-contain"
+              className="w-10 h-10 object-contain"
             />
           </div>
-          <span className="text-xs font-medium text-foreground">{ticker}</span>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-foreground">{name}</span>
+            <span className="text-xs text-muted-foreground">{ticker}</span>
+          </div>
         </div>
         <div className="space-y-1">
           <div className="text-lg font-bold font-tabular">{amount}</div>
@@ -43,7 +46,7 @@ function RouteCard({ name, ticker, amount, change, logoUrl }: RouteCardProps) {
 
 export function TopRoutes() {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <RouteCard 
         name="Bitcoin" 
         ticker="BTC" 

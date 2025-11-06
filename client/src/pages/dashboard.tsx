@@ -102,24 +102,28 @@ export default function DashboardPage() {
         />
       </div>
 
-      <Card className="border-card-border">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="text-lg font-semibold">Market Overview</CardTitle>
-            <div className="flex flex-wrap items-center gap-2">
-              <MetricToggle value={metric} onChange={setMetric} />
-              <TimeRangeTabs value={timeRange} onChange={setTimeRange} />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <TimeSeriesChart data={chartData} metric={metric} />
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card className="border-card-border">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className="text-lg font-semibold">Market Overview</CardTitle>
+                <div className="flex flex-wrap items-center gap-2">
+                  <MetricToggle value={metric} onChange={setMetric} />
+                  <TimeRangeTabs value={timeRange} onChange={setTimeRange} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <TimeSeriesChart data={chartData} metric={metric} />
+            </CardContent>
+          </Card>
+        </div>
 
-      <div>
-        <h2 className="text-sm font-medium text-muted-foreground mb-3">Top Routes</h2>
-        <TopRoutes />
+        <div className="lg:col-span-1">
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Top Routes</h2>
+          <TopRoutes />
+        </div>
       </div>
 
       <Card className="border-card-border">
