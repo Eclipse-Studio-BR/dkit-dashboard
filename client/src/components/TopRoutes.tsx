@@ -1,28 +1,33 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { SiBitcoin, SiEthereum } from "react-icons/si";
+import btcLogo from "@assets/bitcoin-btc-logo_1762387824260.png";
+import ethLogo from "@assets/ethereum-eth-logo_1762387824260.png";
+import solLogo from "@assets/solana-sol-logo_1762387824261.png";
+import runeLogo from "@assets/thorchain-rune-logo_1762387824257.png";
 
 interface RouteCardProps {
-  asset: string;
+  name: string;
+  ticker: string;
   amount: string;
   change: number;
-  icon: "BTC" | "UST" | "ETH" | "CAR";
-  color: string;
+  logoUrl: string;
 }
 
-function RouteCard({ asset, amount, change, icon, color }: RouteCardProps) {
+function RouteCard({ name, ticker, amount, change, logoUrl }: RouteCardProps) {
   const isPositive = change >= 0;
-
-  const Icon = icon === "BTC" ? SiBitcoin : icon === "ETH" ? SiEthereum : SiBitcoin;
 
   return (
     <Card className="border-card-border">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${color}`}>
-            <Icon className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+            <img 
+              src={logoUrl} 
+              alt={`${name} logo`} 
+              className="w-full h-full object-contain"
+            />
           </div>
-          <span className="text-xs font-medium text-foreground">{asset}</span>
+          <span className="text-xs font-medium text-foreground">{ticker}</span>
         </div>
         <div className="space-y-1">
           <div className="text-lg font-bold font-tabular">{amount}</div>
@@ -39,10 +44,34 @@ function RouteCard({ asset, amount, change, icon, color }: RouteCardProps) {
 export function TopRoutes() {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <RouteCard asset="BTC" amount="$24,300.40" change={1.2} icon="BTC" color="bg-orange-500" />
-      <RouteCard asset="UST" amount="$13,400.20" change={0.4} icon="UST" color="bg-blue-500" />
-      <RouteCard asset="ETH" amount="$4,000.80" change={3.4} icon="ETH" color="bg-purple-500" />
-      <RouteCard asset="CAR" amount="$1,900.10" change={-0.9} icon="CAR" color="bg-cyan-500" />
+      <RouteCard 
+        name="Bitcoin" 
+        ticker="BTC" 
+        amount="$24,300.40" 
+        change={1.2} 
+        logoUrl={btcLogo}
+      />
+      <RouteCard 
+        name="Ethereum" 
+        ticker="ETH" 
+        amount="$13,400.20" 
+        change={0.4} 
+        logoUrl={ethLogo}
+      />
+      <RouteCard 
+        name="Solana" 
+        ticker="SOL" 
+        amount="$4,000.80" 
+        change={3.4} 
+        logoUrl={solLogo}
+      />
+      <RouteCard 
+        name="THORChain" 
+        ticker="RUNE" 
+        amount="$1,900.10" 
+        change={-0.9} 
+        logoUrl={runeLogo}
+      />
     </div>
   );
 }
