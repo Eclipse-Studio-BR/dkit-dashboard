@@ -1,21 +1,30 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/public",
   "builds": [
     {
-      "src": "dist/index.js",
+      "src": "server/index.ts",
       "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/public"
+      }
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/dist/index.js"
+      "src": "/assets/(.*)",
+      "dest": "/dist/public/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|svg|woff|woff2))",
+      "dest": "/dist/public/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/index.js"
+      "dest": "/server/index.ts"
     }
   ]
 }
