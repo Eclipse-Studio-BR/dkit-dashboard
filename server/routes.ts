@@ -1,8 +1,8 @@
 import type { Express, Request, Response } from "express";
 import session from "express-session";
 import bcrypt from "bcryptjs";
-import { storage } from "./storage";
-import { insertUserSchema, insertProjectSchema } from "@shared/schema";
+import { storage } from "./storage.js";
+import { insertUserSchema, insertProjectSchema } from "../shared/schema.js";
 import { z } from "zod";
 
 declare module "express-session" {

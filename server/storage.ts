@@ -1,5 +1,5 @@
-import { type User, type InsertUser, type Project, type InsertProject, type MetricPoint, type Transaction } from "@shared/schema";
-import { users, projects, metricPoints, transactions } from "@shared/schema";
+import { type User, type InsertUser, type Project, type InsertProject, type MetricPoint, type Transaction } from "../shared/schema.js";
+import { users, projects, metricPoints, transactions } from "../shared/schema.js";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
