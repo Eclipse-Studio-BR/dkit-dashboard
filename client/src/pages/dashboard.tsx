@@ -12,6 +12,11 @@ import type { MetricsResponse, Transaction } from "@shared/schema";
 export default function DashboardPage() {
   const [metric, setMetric] = useState<"fees" | "volume">("fees");
   const [timeRange, setTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("7D");
+  
+  // Separate timeframes for each KPI
+  const [volumeTimeRange, setVolumeTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("All");
+  const [feesTimeRange, setFeesTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("All");
+  const [transactionsTimeRange, setTransactionsTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("All");
 
   const getTimeRangeParams = (range: typeof timeRange) => {
     const now = new Date();
@@ -40,10 +45,42 @@ export default function DashboardPage() {
     return `?from=${from}&to=${to}`;
   };
 
+  // Metrics query for the chart
   const { data: metricsData, isLoading: metricsLoading, isFetching: metricsFetching } = useQuery<MetricsResponse>({
     queryKey: ["/api/metrics", timeRange],
     queryFn: async () => {
       const params = getTimeRangeParams(timeRange);
+      const response = await fetch(`/api/metrics${params}`);
+      if (!response.ok) throw new Error("Failed to fetch metrics");
+      return response.json();
+    },
+  });
+
+  // Separate queries for each KPI
+  const { data: volumeData, isFetching: volumeFetching } = useQuery<MetricsResponse>({
+    queryKey: ["/api/metrics", "volume", volumeTimeRange],
+    queryFn: async () => {
+      const params = getTimeRangeParams(volumeTimeRange);
+      const response = await fetch(`/api/metrics${params}`);
+      if (!response.ok) throw new Error("Failed to fetch metrics");
+      return response.json();
+    },
+  });
+
+  const { data: feesData, isFetching: feesFetching } = useQuery<MetricsResponse>({
+    queryKey: ["/api/metrics", "fees", feesTimeRange],
+    queryFn: async () => {
+      const params = getTimeRangeParams(feesTimeRange);
+      const response = await fetch(`/api/metrics${params}`);
+      if (!response.ok) throw new Error("Failed to fetch metrics");
+      return response.json();
+    },
+  });
+
+  const { data: transactionsData, isFetching: transactionsFetching } = useQuery<MetricsResponse>({
+    queryKey: ["/api/metrics", "transactions", transactionsTimeRange],
+    queryFn: async () => {
+      const params = getTimeRangeParams(transactionsTimeRange);
       const response = await fetch(`/api/metrics${params}`);
       if (!response.ok) throw new Error("Failed to fetch metrics");
       return response.json();
@@ -82,24 +119,42 @@ export default function DashboardPage() {
     );
   }
 
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat("en-US").format(value);
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">dKiT Partners Dashboard</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <KpiCard
           title="Total Volume"
-          value={formatCurrency(metricsData?.totals.volumeUsd || 0)}
-          btcEquivalent={formatBtc(metricsData?.totals.volumeUsd || 0)}
+          value={formatCurrency(volumeData?.totals.volumeUsd || 0)}
+          btcEquivalent={formatBtc(volumeData?.totals.volumeUsd || 0)}
           testId="total-volume"
+          timeRange={volumeTimeRange}
+          onTimeRangeChange={setVolumeTimeRange}
+          isLoading={volumeFetching}
         />
         <KpiCard
           title="Affiliate Fees Earned"
-          value={formatCurrency(metricsData?.totals.feesUsd || 0)}
-          btcEquivalent={formatBtc(metricsData?.totals.feesUsd || 0)}
+          value={formatCurrency(feesData?.totals.feesUsd || 0)}
+          btcEquivalent={formatBtc(feesData?.totals.feesUsd || 0)}
           testId="affiliate-fees"
+          timeRange={feesTimeRange}
+          onTimeRangeChange={setFeesTimeRange}
+          isLoading={feesFetching}
+        />
+        <KpiCard
+          title="Transactions"
+          value={formatNumber(transactionsData?.totals.trades || 0)}
+          testId="transactions"
+          timeRange={transactionsTimeRange}
+          onTimeRangeChange={setTransactionsTimeRange}
+          isLoading={transactionsFetching}
         />
       </div>
 

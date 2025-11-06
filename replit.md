@@ -33,7 +33,8 @@ A dark-themed partner dashboard for managing affiliate tracking, payouts, and pe
 1. **Authentication**: Email/password with bcrypt hashing, session-based auth
 2. **Onboarding**: 3-step wizard (Project basics, Bitcoin payout address, Tracking IDs)
 3. **Dashboard**: 
-   - KPIs with hide/reveal (Total Volume, Affiliate Fees with BTC equivalent)
+   - 3 KPI cards with hide/reveal and independent timeframes (Total Volume, Affiliate Fees, Transactions)
+   - Each KPI has timeframe selector (1D/7D/1M/3M/All), defaults to "All"
    - Yellow gradient time-series chart with metric toggle (Fees/Volume)
    - Time range filtering (1D/7D/1M/3M/All)
    - Top Routes cards with real crypto logos (BTC, ETH, SOL, RUNE)
@@ -113,6 +114,17 @@ Transaction: { id, projectId, ts, route, usdNotional, feeUsd, status, txHash, ch
 - Responsive design: sidebar collapses to icons, charts adapt
 
 ## Recent Changes (2025-11-06)
+
+### Enhanced KPI Cards with Independent Timeframes
+- Added third KPI card: "Transactions" showing transaction count
+- Implemented individual timeframe selectors for each KPI (1D, 7D, 1M, 3M, All)
+- All KPIs default to "All" timeframe on load
+- Each KPI maintains independent state (changing one doesn't affect others)
+- Updated grid layout to 3 columns (md:grid-cols-3)
+- Separate API queries for each KPI's data (volumeData, feesData, transactionsData)
+- Individual loading spinners appear on each card during refetch
+- Transactions KPI displays formatted count (no BTC equivalent)
+- Volume and Fees continue to show USD + BTC equivalent
 
 ### Logo Upload Feature
 - Implemented secure file upload using Replit Object Storage (Google Cloud Storage)
