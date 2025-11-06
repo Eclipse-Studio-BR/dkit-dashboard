@@ -50,7 +50,8 @@ export function AppSidebar() {
         <img 
           src={dkitLogo} 
           alt="dKit" 
-          className="h-[30px] w-auto"
+          className="h-8 w-auto object-contain"
+          style={{ maxWidth: '180px' }}
         />
       </SidebarHeader>
       <SidebarContent>
