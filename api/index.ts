@@ -240,9 +240,4 @@ app.get("/api/transactions", authMiddleware, async (req: any, res) => {
   }
 });
 
-// Catch-all for frontend
-app.get('*', (_req, res) => {
-  res.send('<!DOCTYPE html><html><head><title>dKit Dashboard</title></head><body><div id="root"></div><script type="module" src="/assets/index.js"></script></body></html>');
-});
-
 export default app;
