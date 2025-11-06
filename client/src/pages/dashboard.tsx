@@ -40,7 +40,7 @@ export default function DashboardPage() {
     return `?from=${from}&to=${to}`;
   };
 
-  const { data: metricsData, isLoading: metricsLoading } = useQuery<MetricsResponse>({
+  const { data: metricsData, isLoading: metricsLoading, isFetching: metricsFetching } = useQuery<MetricsResponse>({
     queryKey: ["/api/metrics", timeRange],
     queryFn: async () => {
       const params = getTimeRangeParams(timeRange);
@@ -73,7 +73,8 @@ export default function DashboardPage() {
     return `~ ${btc.toFixed(4)} BTC`;
   };
 
-  if (metricsLoading || transactionsLoading) {
+  // Only show full screen loading on initial load (no data yet)
+  if ((metricsLoading && !metricsData) || (transactionsLoading && !transactions)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-muted-foreground">Loading dashboard...</div>
@@ -116,7 +117,10 @@ export default function DashboardPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative">
+              {metricsFetching && <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10 rounded-lg">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>}
               <TimeSeriesChart data={chartData} metric={metric} />
             </CardContent>
           </Card>
