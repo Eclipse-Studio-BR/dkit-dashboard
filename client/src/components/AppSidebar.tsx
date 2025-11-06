@@ -49,8 +49,8 @@ export function AppSidebar() {
       <SidebarHeader className="p-6">
         <div className="flex justify-start">
           <img 
-            src={dkitLogo} 
-            alt="dKit" 
+            src={meData?.project?.logoUrl || dkitLogo} 
+            alt={meData?.project?.name || "dKit"} 
             className="h-10 w-auto object-contain"
             style={{ maxWidth: '200px' }}
           />

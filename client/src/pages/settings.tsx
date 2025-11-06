@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { insertProjectSchema, type MeResponse } from "@shared/schema";
 import { z } from "zod";
+import { LogoUploader } from "@/components/LogoUploader";
 
 type SettingsForm = z.infer<typeof insertProjectSchema>;
 
@@ -103,8 +104,12 @@ export default function SettingsPage() {
               />
               <div>
                 <label className="text-sm font-medium mb-2 block">Project Logo</label>
-                <Input type="file" accept="image/*" disabled data-testid="input-project-logo" />
-                <p className="text-xs text-muted-foreground mt-1">Upload your project logo (coming soon)</p>
+                <LogoUploader 
+                  currentLogoUrl={meData?.project?.logoUrl}
+                  onUploadComplete={(logoUrl) => {
+                    form.setValue("logoUrl", logoUrl);
+                  }}
+                />
               </div>
               <FormField
                 control={form.control}

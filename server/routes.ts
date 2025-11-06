@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema } from "@shared/schema";
 import { z } from "zod";
+import { ObjectStorageService } from "./objectStorage";
 
 declare module "express-session" {
   interface SessionData {
@@ -244,6 +245,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(formatted);
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to fetch transactions" });
+    }
+  });
+
+  // Object storage endpoints
+  app.post("/api/upload-url", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const objectStorage = new ObjectStorageService();
+      const uploadURL = await objectStorage.getUploadURL();
+      res.json({ uploadURL });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get upload URL" });
+    }
+  });
+
+  app.get("/objects/:objectPath(*)", async (req: Request, res: Response) => {
+    try {
+      const objectStorage = new ObjectStorageService();
+      const objectFile = await objectStorage.getObjectFile(`/objects/${req.params.objectPath}`);
+      const [exists] = await objectFile.exists();
+      if (!exists) {
+        return res.status(404).json({ message: "File not found" });
+      }
+      await objectStorage.downloadObject(objectFile, res);
+    } catch (error: any) {
+      console.error("Error serving object:", error);
+      res.status(500).json({ message: error.message || "Failed to serve file" });
     }
   });
 
