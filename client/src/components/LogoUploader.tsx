@@ -56,11 +56,12 @@ export function LogoUploader({ currentLogoUrl, onUploadComplete }: LogoUploaderP
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
+    // Validate file type - strict allowlist
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
       toast({
         title: "Invalid file type",
-        description: "Please select an image file (PNG, JPG, SVG, etc.)",
+        description: "Please select PNG, JPG, SVG, or WebP image only",
         variant: "destructive",
       });
       return;

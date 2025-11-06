@@ -49,8 +49,8 @@ export function AppSidebar() {
       <SidebarHeader className="p-6">
         <div className="flex justify-start">
           <img 
-            src={meData?.project?.logoUrl || dkitLogo} 
-            alt={meData?.project?.name || "dKit"} 
+            src={dkitLogo} 
+            alt="dKit" 
             className="h-10 w-auto object-contain"
             style={{ maxWidth: '200px' }}
           />
@@ -83,9 +83,19 @@ export function AppSidebar() {
       {meData && (
         <SidebarFooter className="p-4 border-t border-sidebar-border space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-              {meData.user.email.charAt(0).toUpperCase()}
-            </div>
+            {meData.project?.logoUrl ? (
+              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center border border-border/40 bg-card/30">
+                <img 
+                  src={meData.project.logoUrl} 
+                  alt={meData.project.name || "Project logo"} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+                {meData.user.email.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-sidebar-foreground truncate">
                 {meData.project.name || "Partner"}

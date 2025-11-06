@@ -31,10 +31,10 @@ export class ObjectStorageService {
     return dir;
   }
 
-  async getUploadURL(): Promise<string> {
+  async getUploadURL(projectId: string): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();
     const objectId = randomUUID();
-    const fullPath = `${privateObjectDir}/logos/${objectId}`;
+    const fullPath = `${privateObjectDir}/projects/${projectId}/logos/${objectId}`;
     
     const { bucketName, objectName } = this.parseObjectPath(fullPath);
     
@@ -65,6 +65,37 @@ export class ObjectStorageService {
   
     const entityId = rawObjectPath.slice(objectEntityDir.length);
     return `/objects/${entityId}`;
+  }
+
+  verifyAndSanitizeProjectPath(objectPath: string, projectId: string): string | null {
+    // Reject any path containing .. components
+    if (objectPath.includes('..')) {
+      return null;
+    }
+    
+    // Basic normalization
+    let normalizedPath = objectPath.replace(/\/+/g, '/');
+    
+    // Escape projectId to prevent regex injection
+    const escapedProjectId = projectId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Object path must match exact pattern: /objects/projects/<projectId>/logos/<uuid>
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const pathPattern = new RegExp(`^/objects/projects/${escapedProjectId}/logos/([0-9a-f-]+)$`, 'i');
+    
+    const match = normalizedPath.match(pathPattern);
+    if (!match) {
+      return null;
+    }
+    
+    // Verify the UUID part is valid
+    const uuidPart = match[1];
+    if (!uuidPattern.test(uuidPart)) {
+      return null;
+    }
+    
+    // Return the sanitized path (without ../ attempts)
+    return `/objects/projects/${projectId}/logos/${uuidPart}`;
   }
 
   async getObjectFile(objectPath: string): Promise<File> {

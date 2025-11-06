@@ -7,6 +7,8 @@ import { insertUserSchema, insertProjectSchema } from "@shared/schema";
 import { z } from "zod";
 import { ObjectStorageService } from "./objectStorage";
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
+
 declare module "express-session" {
   interface SessionData {
     userId?: string;
@@ -151,6 +153,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updates = insertProjectSchema.partial().parse(req.body);
+      
+      // Verify logoUrl belongs to this project if it's being updated
+      if (updates.logoUrl) {
+        const objectStorage = new ObjectStorageService();
+        const sanitizedPath = objectStorage.verifyAndSanitizeProjectPath(updates.logoUrl, user.projectId);
+        if (!sanitizedPath) {
+          return res.status(403).json({ message: "Invalid logo URL - must belong to your project" });
+        }
+        // Use the sanitized path
+        updates.logoUrl = sanitizedPath;
+      }
+
       const project = await storage.updateProject(user.projectId, updates);
 
       if (!project) {
@@ -251,26 +265,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Object storage endpoints
   app.post("/api/upload-url", authMiddleware, async (req: Request, res: Response) => {
     try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user || !user.projectId) {
+        return res.status(403).json({ message: "Project required" });
+      }
+
       const objectStorage = new ObjectStorageService();
-      const uploadURL = await objectStorage.getUploadURL();
+      const uploadURL = await objectStorage.getUploadURL(user.projectId);
       res.json({ uploadURL });
     } catch (error: any) {
       res.status(500).json({ message: error.message || "Failed to get upload URL" });
     }
   });
 
-  app.get("/objects/:objectPath(*)", async (req: Request, res: Response) => {
+  app.get("/objects/:objectPath(*)", authMiddleware, async (req: Request, res: Response) => {
     try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user || !user.projectId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      const requestedPath = `/objects/${req.params.objectPath}`;
+      
+      // Verify and sanitize the requested file path
       const objectStorage = new ObjectStorageService();
-      const objectFile = await objectStorage.getObjectFile(`/objects/${req.params.objectPath}`);
+      const sanitizedPath = objectStorage.verifyAndSanitizeProjectPath(requestedPath, user.projectId);
+      if (!sanitizedPath) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      // Use the sanitized path for the actual file fetch
+      const objectFile = await objectStorage.getObjectFile(sanitizedPath);
       const [exists] = await objectFile.exists();
       if (!exists) {
-        return res.status(404).json({ message: "File not found" });
+        return res.status(403).json({ message: "Unauthorized" });
       }
       await objectStorage.downloadObject(objectFile, res);
     } catch (error: any) {
       console.error("Error serving object:", error);
-      res.status(500).json({ message: error.message || "Failed to serve file" });
+      res.status(403).json({ message: "Unauthorized" });
     }
   });
 
