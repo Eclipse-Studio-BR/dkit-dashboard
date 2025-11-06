@@ -1,5 +1,4 @@
 import type { Express, Request, Response } from "express";
-import { createServer, type Server } from "http";
 import session from "express-session";
 import bcrypt from "bcryptjs";
 import { storage } from "./storage";
@@ -19,7 +18,7 @@ const authMiddleware = (req: Request, res: Response, next: Function) => {
   next();
 };
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<Express> {
   app.use(
     session({
       secret: process.env.SESSION_SECRET || "dkit-partners-secret-key-change-in-production",
@@ -248,7 +247,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-
-  return httpServer;
+  return app;
 }
