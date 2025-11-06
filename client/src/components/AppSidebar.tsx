@@ -47,7 +47,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-6">
-        <div className="flex justify-end">
+        <div className="flex justify-start">
           <img 
             src={dkitLogo} 
             alt="dKit" 
