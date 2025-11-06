@@ -35,8 +35,8 @@ export function TimeSeriesChart({ data, metric }: TimeSeriesChartProps) {
       <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="hsl(262 83% 65%)" stopOpacity={0.4} />
-            <stop offset="95%" stopColor="hsl(262 83% 65%)" stopOpacity={0} />
+            <stop offset="5%" stopColor="#FFE224" stopOpacity={0.32} />
+            <stop offset="95%" stopColor="#FFE224" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 4% 18%)" vertical={false} />
@@ -76,11 +76,11 @@ export function TimeSeriesChart({ data, metric }: TimeSeriesChartProps) {
         <Area
           type="monotone"
           dataKey="value"
-          stroke="hsl(262 83% 65%)"
+          stroke="#FFE224"
           strokeWidth={2}
           fill="url(#colorValue)"
           dot={false}
-          activeDot={{ r: 4, fill: "hsl(262 83% 65%)" }}
+          activeDot={{ r: 4, fill: "#FFE224" }}
         />
       </AreaChart>
     </ResponsiveContainer>

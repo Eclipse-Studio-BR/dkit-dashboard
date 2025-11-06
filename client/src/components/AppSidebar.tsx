@@ -46,12 +46,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-6">
+      <SidebarHeader className="p-6 flex justify-end">
         <img 
           src={dkitLogo} 
           alt="dKit" 
-          className="h-8 w-auto object-contain"
-          style={{ maxWidth: '180px' }}
+          className="h-10 w-auto object-contain"
+          style={{ maxWidth: '200px' }}
         />
       </SidebarHeader>
       <SidebarContent>
