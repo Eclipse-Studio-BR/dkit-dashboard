@@ -398,6 +398,6 @@ export class DbStorage implements IStorage {
   }
 }
 
-// Using MemStorage for MVP - switch to DbStorage when ready for persistence
-export const storage = new MemStorage();
-// export const storage = new DbStorage();
+// Using DbStorage for production with Neon database
+// export const storage = new MemStorage(); // Use this for local testing without database
+export const storage = new DbStorage();
