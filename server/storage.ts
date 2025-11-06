@@ -164,28 +164,44 @@ export class MemStorage implements IStorage {
   }
 
   private seedProjectTransactions(projectId: string) {
-    const routes = ["BTC→ETH", "ETH→USDC", "USDC→BTC", "ETH→BTC", "BTC→USDT"];
+    const swapPairs = [
+      { from: "BTC", to: "ETH", route: "BTC→ETH" },
+      { from: "ETH", to: "USDC", route: "ETH→USDC" },
+      { from: "USDC", to: "BTC", route: "USDC→BTC" },
+      { from: "ETH", to: "BTC", route: "ETH→BTC" },
+      { from: "BTC", to: "USDT", route: "BTC→USDT" },
+      { from: "SOL", to: "ETH", route: "SOL→ETH" },
+      { from: "RUNE", to: "BTC", route: "RUNE→BTC" },
+    ];
     const chains = ["THOR", "MAYA", "CHAINFLIP"];
-    const statuses = ["Completed", "Terminated"];
+    const statuses = ["Completed", "Running", "Refunded"];
     
-    const transactionCount = 6 + Math.floor(Math.random() * 4);
+    const transactionCount = 8 + Math.floor(Math.random() * 4);
 
     for (let i = 0; i < transactionCount; i++) {
       const hoursAgo = i * 2 + Math.random() * 2;
       const ts = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
       
-      const route = routes[Math.floor(Math.random() * routes.length)];
+      const pair = swapPairs[Math.floor(Math.random() * swapPairs.length)];
       const chain = chains[Math.floor(Math.random() * chains.length)];
-      const status = i === 1 ? "Terminated" : statuses[Math.floor(Math.random() * statuses.length)];
+      const status = i === 0 ? "Running" : i === 1 ? "Refunded" : statuses[Math.floor(Math.random() * statuses.length)];
       
       const usdNotional = 1000 + Math.random() * 5000;
       const feeUsd = usdNotional * 0.003;
+
+      // Generate realistic amounts
+      const amountIn = (Math.random() * 5 + 0.1).toFixed(4);
+      const amountOut = (parseFloat(amountIn) * (0.95 + Math.random() * 0.04)).toFixed(4);
 
       const transaction: Transaction = {
         id: randomUUID(),
         projectId,
         ts,
-        route,
+        assetFrom: pair.from,
+        assetTo: pair.to,
+        amountIn: `${amountIn} ${pair.from}`,
+        amountOut: `${amountOut} ${pair.to}`,
+        route: pair.route,
         usdNotional,
         feeUsd,
         status,
@@ -332,28 +348,44 @@ export class DbStorage implements IStorage {
   }
 
   private async seedProjectTransactions(projectId: string) {
-    const routes = ["BTC→ETH", "ETH→USDC", "USDC→BTC", "ETH→BTC", "BTC→USDT"];
+    const swapPairs = [
+      { from: "BTC", to: "ETH", route: "BTC→ETH" },
+      { from: "ETH", to: "USDC", route: "ETH→USDC" },
+      { from: "USDC", to: "BTC", route: "USDC→BTC" },
+      { from: "ETH", to: "BTC", route: "ETH→BTC" },
+      { from: "BTC", to: "USDT", route: "BTC→USDT" },
+      { from: "SOL", to: "ETH", route: "SOL→ETH" },
+      { from: "RUNE", to: "BTC", route: "RUNE→BTC" },
+    ];
     const chains = ["THOR", "MAYA", "CHAINFLIP"];
-    const statuses = ["Completed", "Terminated"];
+    const statuses = ["Completed", "Running", "Refunded"];
     
-    const transactionCount = 6 + Math.floor(Math.random() * 4);
+    const transactionCount = 8 + Math.floor(Math.random() * 4);
     const transactionsToInsert: (typeof transactions.$inferInsert)[] = [];
 
     for (let i = 0; i < transactionCount; i++) {
       const hoursAgo = i * 2 + Math.random() * 2;
       const ts = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
       
-      const route = routes[Math.floor(Math.random() * routes.length)];
+      const pair = swapPairs[Math.floor(Math.random() * swapPairs.length)];
       const chain = chains[Math.floor(Math.random() * chains.length)];
-      const status = i === 1 ? "Terminated" : statuses[Math.floor(Math.random() * statuses.length)];
+      const status = i === 0 ? "Running" : i === 1 ? "Refunded" : statuses[Math.floor(Math.random() * statuses.length)];
       
       const usdNotional = 1000 + Math.random() * 5000;
       const feeUsd = usdNotional * 0.003;
 
+      // Generate realistic amounts
+      const amountIn = (Math.random() * 5 + 0.1).toFixed(4);
+      const amountOut = (parseFloat(amountIn) * (0.95 + Math.random() * 0.04)).toFixed(4);
+
       transactionsToInsert.push({
         projectId,
         ts,
-        route,
+        assetFrom: pair.from,
+        assetTo: pair.to,
+        amountIn: `${amountIn} ${pair.from}`,
+        amountOut: `${amountOut} ${pair.to}`,
+        route: pair.route,
         usdNotional,
         feeUsd,
         status,
