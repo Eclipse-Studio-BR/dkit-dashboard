@@ -398,4 +398,6 @@ export class DbStorage implements IStorage {
   }
 }
 
-export const storage = new DbStorage();
+// Using MemStorage for MVP - switch to DbStorage when ready for persistence
+export const storage = new MemStorage();
+// export const storage = new DbStorage();

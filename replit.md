@@ -174,7 +174,10 @@ Transaction: { id, projectId, ts, route, usdNotional, feeUsd, status, txHash, ch
 - **Session Secret**: Managed via SESSION_SECRET environment variable
 - **Mock Data**: Currently seeds 30 days (can extend to 90/365 for longer ranges)
 - **Password Security**: bcrypt cost factor 10 (can tune for production load)
-- **In-Memory Storage**: Data resets on server restart (expected for MVP)
+- **In-Memory Storage**: Currently using MemStorage (data resets on server restart)
+  - **Note**: DbStorage (PostgreSQL) is available but commented out in server/storage.ts
+  - Switch to DbStorage when ready for persistent data across restarts
+  - Neon database may auto-suspend after inactivity - use MemStorage for development
 
 ## Next Steps for Production
 1. Extend metrics seeding to 90-day/365-day windows for differentiated analytics
