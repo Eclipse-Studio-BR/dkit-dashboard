@@ -1,6 +1,10 @@
 import { format } from "date-fns";
 import { ExternalLink, Loader2 } from "lucide-react";
 import type { Transaction } from "@shared/schema";
+import btcLogo from "@assets/bitcoin-btc-logo_1762387824260.png";
+import ethLogo from "@assets/ethereum-eth-logo_1762387824260.png";
+import solLogo from "@assets/solana-sol-logo_1762387824261.png";
+import runeLogo from "@assets/thorchain-rune-logo_1762387824257.png";
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -8,7 +12,6 @@ interface TransactionsTableProps {
 
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
   const getExplorerUrl = (txHash: string, chain: string) => {
-    // Return appropriate explorer URL based on chain
     const baseUrls: Record<string, string> = {
       "THOR": "https://viewblock.io/thorchain/tx/",
       "MAYA": "https://www.mayascan.org/tx/",
@@ -46,6 +49,16 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
     }
   };
 
+  const getAssetLogo = (asset: string): string => {
+    const logoMap: Record<string, string> = {
+      "BTC": btcLogo,
+      "ETH": ethLogo,
+      "SOL": solLogo,
+      "RUNE": runeLogo,
+    };
+    return logoMap[asset] || btcLogo;
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -70,6 +83,11 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
               >
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
+                    <img 
+                      src={getAssetLogo(tx.assetFrom)} 
+                      alt={tx.assetFrom}
+                      className="w-5 h-5 object-contain"
+                    />
                     <span className="text-sm font-medium">{tx.route}</span>
                   </div>
                 </td>

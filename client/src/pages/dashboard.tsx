@@ -107,7 +107,9 @@ export default function DashboardPage() {
           <Card className="border-card-border">
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <CardTitle className="text-lg font-semibold">Market Overview</CardTitle>
+                <CardTitle className="text-lg font-semibold">
+                  {metric === "fees" ? "Earnings Overview" : "Volume Overview"}
+                </CardTitle>
                 <div className="flex flex-wrap items-center gap-2">
                   <MetricToggle value={metric} onChange={setMetric} />
                   <TimeRangeTabs value={timeRange} onChange={setTimeRange} />
