@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { LayoutDashboard, Wallet, Settings, HelpCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Key, Settings, HelpCircle, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,7 +19,7 @@ import dkitLogo from "@assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/wallet", label: "Wallet", icon: Wallet },
+  { path: "/api-keys", label: "API Keys", icon: Key },
   { path: "/settings", label: "Settings", icon: Settings },
   { path: "/support", label: "Support", icon: HelpCircle },
 ];
@@ -45,7 +45,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="none">
       <SidebarHeader className="p-6">
         <div className="flex justify-start">
           <img 

@@ -10,15 +10,15 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser, projectId: string): Promise<User>;
-  
+
   // Project methods
   getProject(id: string): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
-  updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined>;
-  
+  updateProject(id: string, updates: Partial<InsertProject> & { setupCompleted?: string }): Promise<Project | undefined>;
+
   // Metrics methods
   getMetrics(projectId: string, fromDate?: Date, toDate?: Date): Promise<MetricPoint[]>;
-  
+
   // Transaction methods
   getTransactions(projectId: string, limit?: number): Promise<Transaction[]>;
 }
@@ -50,9 +50,11 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser, projectId: string): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
-      ...insertUser, 
+    const user: User = {
       id,
+      name: insertUser.name,
+      email: insertUser.email,
+      password: insertUser.password,
       role: "PARTNER",
       projectId,
     };
@@ -66,15 +68,16 @@ export class MemStorage implements IStorage {
 
   async createProject(insertProject: InsertProject): Promise<Project> {
     const id = randomUUID();
-    const project: Project = { 
+    const project: Project = {
       id,
-      name: insertProject.name,
+      name: insertProject.name || null,
       logoUrl: insertProject.logoUrl || null,
       dappUrl: insertProject.dappUrl || null,
       btcAddress: insertProject.btcAddress || null,
       thorName: insertProject.thorName || null,
       mayaName: insertProject.mayaName || null,
       chainflipAddress: insertProject.chainflipAddress || null,
+      setupCompleted: "false",
     };
     this.projects.set(id, project);
     this.seedProjectMetrics(id);
@@ -82,19 +85,20 @@ export class MemStorage implements IStorage {
     return project;
   }
 
-  async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined> {
+  async updateProject(id: string, updates: Partial<InsertProject> & { setupCompleted?: string }): Promise<Project | undefined> {
     const project = this.projects.get(id);
     if (!project) return undefined;
 
     const updated: Project = {
       ...project,
-      name: updates.name !== undefined ? updates.name : project.name,
+      name: updates.name !== undefined ? updates.name || null : project.name,
       logoUrl: updates.logoUrl !== undefined ? updates.logoUrl || null : project.logoUrl,
       dappUrl: updates.dappUrl !== undefined ? updates.dappUrl || null : project.dappUrl,
       btcAddress: updates.btcAddress !== undefined ? updates.btcAddress || null : project.btcAddress,
       thorName: updates.thorName !== undefined ? updates.thorName || null : project.thorName,
       mayaName: updates.mayaName !== undefined ? updates.mayaName || null : project.mayaName,
       chainflipAddress: updates.chainflipAddress !== undefined ? updates.chainflipAddress || null : project.chainflipAddress,
+      setupCompleted: updates.setupCompleted !== undefined ? updates.setupCompleted : project.setupCompleted,
     };
 
     this.projects.set(id, updated);
@@ -238,6 +242,7 @@ export class DbStorage implements IStorage {
 
   async createUser(insertUser: InsertUser, projectId: string): Promise<User> {
     const result = await this.db.insert(users).values({
+      name: insertUser.name,
       email: insertUser.email,
       password: insertUser.password,
       role: "PARTNER",
@@ -253,37 +258,39 @@ export class DbStorage implements IStorage {
 
   async createProject(insertProject: InsertProject): Promise<Project> {
     const result = await this.db.insert(projects).values({
-      name: insertProject.name,
+      name: insertProject.name || null,
       logoUrl: insertProject.logoUrl || null,
       dappUrl: insertProject.dappUrl || null,
       btcAddress: insertProject.btcAddress || null,
       thorName: insertProject.thorName || null,
       mayaName: insertProject.mayaName || null,
       chainflipAddress: insertProject.chainflipAddress || null,
+      setupCompleted: "false",
     }).returning();
-    
+
     const project = result[0];
-    
+
     await this.seedProjectMetrics(project.id);
     await this.seedProjectTransactions(project.id);
-    
+
     return project;
   }
 
-  async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined> {
+  async updateProject(id: string, updates: Partial<InsertProject> & { setupCompleted?: string }): Promise<Project | undefined> {
     const result = await this.db.update(projects)
       .set({
-        name: updates.name,
+        name: updates.name !== undefined ? updates.name || null : undefined,
         logoUrl: updates.logoUrl !== undefined ? updates.logoUrl || null : undefined,
         dappUrl: updates.dappUrl !== undefined ? updates.dappUrl || null : undefined,
         btcAddress: updates.btcAddress !== undefined ? updates.btcAddress || null : undefined,
         thorName: updates.thorName !== undefined ? updates.thorName || null : undefined,
         mayaName: updates.mayaName !== undefined ? updates.mayaName || null : undefined,
         chainflipAddress: updates.chainflipAddress !== undefined ? updates.chainflipAddress || null : undefined,
+        setupCompleted: updates.setupCompleted !== undefined ? updates.setupCompleted : undefined,
       })
       .where(eq(projects.id, id))
       .returning();
-    
+
     return result[0];
   }
 
