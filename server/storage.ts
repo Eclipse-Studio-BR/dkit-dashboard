@@ -50,6 +50,7 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser, projectId: string): Promise<User> {
     const id = randomUUID();
+    const now = new Date();
     const user: User = {
       id,
       name: insertUser.name,
@@ -57,6 +58,10 @@ export class MemStorage implements IStorage {
       password: insertUser.password,
       role: "PARTNER",
       projectId,
+      googleId: null,
+      avatarUrl: null,
+      createdAt: now,
+      updatedAt: now,
     };
     this.users.set(id, user);
     return user;

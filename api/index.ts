@@ -1,9 +1,11 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import bcrypt from "bcryptjs";
 import { storage } from "../server/storage.js";
 import { insertUserSchema, insertProjectSchema } from "../shared/schema.js";
 import { z } from "zod";
+import pgSession from "connect-pg-simple";
+import { neon } from "@neondatabase/serverless";
 
 const app = express();
 
@@ -13,20 +15,36 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Session configuration
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "dkit-partners-secret-key-change-in-production",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: true,
-      httpOnly: true,
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+// Session store configuration for serverless
+const PgStore = pgSession(session);
+
+// Session configuration with database-backed store for Vercel
+const sessionConfig: session.SessionOptions = {
+  secret: process.env.SESSION_SECRET || "dkit-partners-secret-key-change-in-production",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+  },
+};
+
+// Use database-backed session store in production/Vercel
+if (process.env.DATABASE_URL) {
+  const sql = neon(process.env.DATABASE_URL);
+  sessionConfig.store = new PgStore({
+    conObject: {
+      connectionString: process.env.DATABASE_URL,
     },
-  })
-);
+    createTableIfMissing: true,
+    // @ts-ignore - The types don't perfectly align but this works
+    pool: undefined, // We're using Neon HTTP, not a pool
+  });
+}
+
+app.use(session(sessionConfig));
 
 declare module "express-session" {
   interface SessionData {
@@ -34,7 +52,11 @@ declare module "express-session" {
   }
 }
 
-const authMiddleware = (req: any, res: any, next: any) => {
+interface AuthRequest extends Request {
+  session: session.Session & Partial<session.SessionData>;
+}
+
+const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.session.userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -42,15 +64,16 @@ const authMiddleware = (req: any, res: any, next: any) => {
 };
 
 // Auth endpoints
-app.post("/api/auth/register", async (req, res) => {
+app.post("/api/auth/register", async (req: AuthRequest, res: Response) => {
   try {
-    const { email, password, project } = req.body;
+    const { email, password, name, project } = req.body;
     const userSchema = z.object({
       email: z.string().email(),
       password: z.string().min(6),
+      name: z.string().min(1, "Name is required"),
     });
 
-    const userData = userSchema.parse({ email, password });
+    const userData = userSchema.parse({ email, password, name: name || email.split('@')[0] });
     const existingUser = await storage.getUserByEmail(userData.email);
     
     if (existingUser) {
@@ -60,7 +83,11 @@ app.post("/api/auth/register", async (req, res) => {
     const projectData = insertProjectSchema.parse(project || {});
     const newProject = await storage.createProject(projectData);
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const user = await storage.createUser({ email: userData.email, password: hashedPassword }, newProject.id);
+    const user = await storage.createUser({ 
+      name: userData.name,
+      email: userData.email, 
+      password: hashedPassword 
+    }, newProject.id);
 
     req.session.userId = user.id;
 
@@ -76,12 +103,12 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", async (req: AuthRequest, res: Response) => {
   try {
     const { email, password } = req.body;
     const user = await storage.getUserByEmail(email);
     
-    if (!user) {
+    if (!user || !user.password) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
@@ -102,7 +129,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-app.post("/api/auth/logout", (req, res) => {
+app.post("/api/auth/logout", (req: AuthRequest, res: Response) => {
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).json({ message: "Logout failed" });
@@ -111,7 +138,7 @@ app.post("/api/auth/logout", (req, res) => {
   });
 });
 
-app.get("/api/me", authMiddleware, async (req: any, res) => {
+app.get("/api/me", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const user = await storage.getUser(req.session.userId!);
     if (!user) {
@@ -137,14 +164,26 @@ app.get("/api/me", authMiddleware, async (req: any, res) => {
   }
 });
 
-app.patch("/api/project", authMiddleware, async (req: any, res) => {
+app.patch("/api/project", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const user = await storage.getUser(req.session.userId!);
     if (!user || !user.projectId) {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const updates = insertProjectSchema.partial().parse(req.body);
+    // Extract setupCompleted separately as it's not part of insertProjectSchema
+    const { setupCompleted, ...projectData } = req.body;
+    
+    // Parse project data if any fields are present
+    const updates: any = Object.keys(projectData).length > 0 
+      ? insertProjectSchema.partial().parse(projectData) 
+      : {};
+    
+    // Add setupCompleted if provided
+    if (setupCompleted !== undefined) {
+      updates.setupCompleted = setupCompleted;
+    }
+
     const project = await storage.updateProject(user.projectId, updates);
 
     if (!project) {
@@ -160,7 +199,7 @@ app.patch("/api/project", authMiddleware, async (req: any, res) => {
   }
 });
 
-app.get("/api/metrics", authMiddleware, async (req: any, res) => {
+app.get("/api/metrics", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const user = await storage.getUser(req.session.userId!);
     if (!user || !user.projectId) {
@@ -217,7 +256,7 @@ app.get("/api/metrics", authMiddleware, async (req: any, res) => {
   }
 });
 
-app.get("/api/transactions", authMiddleware, async (req: any, res) => {
+app.get("/api/transactions", authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const user = await storage.getUser(req.session.userId!);
     if (!user || !user.projectId) {
