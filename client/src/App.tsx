@@ -10,6 +10,7 @@ import LoginPage from "@/pages/login";
 import OnboardingPage from "@/pages/onboarding";
 import DashboardPage from "@/pages/dashboard";
 import WalletPage from "@/pages/wallet";
+import ApiKeyDetailsPage from "@/pages/api-key-details";
 import SettingsPage from "@/pages/settings";
 import SupportPage from "@/pages/support";
 import NotFound from "@/pages/not-found";
@@ -51,6 +52,11 @@ function Router() {
       <Route path="/api-keys">
         <ProtectedLayout>
           <WalletPage />
+        </ProtectedLayout>
+      </Route>
+      <Route path="/api-keys/:id">
+        <ProtectedLayout>
+          <ApiKeyDetailsPage />
         </ProtectedLayout>
       </Route>
       <Route path="/settings">

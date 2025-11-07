@@ -1,5 +1,5 @@
-import { type User, type InsertUser, type Project, type InsertProject, type MetricPoint, type Transaction } from "../shared/schema.js";
-import { users, projects, metricPoints, transactions } from "../shared/schema.js";
+import { type User, type InsertUser, type Project, type InsertProject, type MetricPoint, type Transaction, type ApiKey, type InsertApiKey } from "../shared/schema.js";
+import { users, projects, metricPoints, transactions, apiKeys } from "../shared/schema.js";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
@@ -21,6 +21,11 @@ export interface IStorage {
 
   // Transaction methods
   getTransactions(projectId: string, limit?: number): Promise<Transaction[]>;
+
+  // API Key methods
+  getApiKeys(projectId: string): Promise<ApiKey[]>;
+  createApiKey(projectId: string, name: string): Promise<ApiKey>;
+  deleteApiKey(id: string, projectId: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -28,13 +33,15 @@ export class MemStorage implements IStorage {
   private projects: Map<string, Project>;
   private metrics: Map<string, MetricPoint>;
   private transactions: Map<string, Transaction>;
+  private apiKeys: Map<string, ApiKey>;
 
   constructor() {
     this.users = new Map();
     this.projects = new Map();
     this.metrics = new Map();
     this.transactions = new Map();
-    
+    this.apiKeys = new Map();
+
     this.seedMockData();
   }
 
@@ -134,6 +141,35 @@ export class MemStorage implements IStorage {
       .filter((t) => t.projectId === projectId)
       .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
       .slice(0, limit);
+  }
+
+  async getApiKeys(projectId: string): Promise<ApiKey[]> {
+    return Array.from(this.apiKeys.values())
+      .filter((k) => k.projectId === projectId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createApiKey(projectId: string, name: string): Promise<ApiKey> {
+    const id = randomUUID();
+    const key = `dk_${randomUUID().replace(/-/g, '')}`;
+    const apiKey: ApiKey = {
+      id,
+      projectId,
+      name,
+      key,
+      status: "active",
+      createdAt: new Date(),
+    };
+    this.apiKeys.set(id, apiKey);
+    return apiKey;
+  }
+
+  async deleteApiKey(id: string, projectId: string): Promise<boolean> {
+    const apiKey = this.apiKeys.get(id);
+    if (!apiKey || apiKey.projectId !== projectId) {
+      return false;
+    }
+    return this.apiKeys.delete(id);
   }
 
   private seedMockData() {
@@ -325,8 +361,39 @@ export class DbStorage implements IStorage {
       .where(eq(transactions.projectId, projectId))
       .orderBy(desc(transactions.ts))
       .limit(limit);
-    
+
     return result;
+  }
+
+  async getApiKeys(projectId: string): Promise<ApiKey[]> {
+    const result = await this.db
+      .select()
+      .from(apiKeys)
+      .where(eq(apiKeys.projectId, projectId))
+      .orderBy(desc(apiKeys.createdAt));
+
+    return result;
+  }
+
+  async createApiKey(projectId: string, name: string): Promise<ApiKey> {
+    const key = `dk_${randomUUID().replace(/-/g, '')}`;
+    const result = await this.db.insert(apiKeys).values({
+      projectId,
+      name,
+      key,
+      status: "active",
+    }).returning();
+
+    return result[0];
+  }
+
+  async deleteApiKey(id: string, projectId: string): Promise<boolean> {
+    const result = await this.db
+      .delete(apiKeys)
+      .where(and(eq(apiKeys.id, id), eq(apiKeys.projectId, projectId)))
+      .returning();
+
+    return result.length > 0;
   }
 
   private async seedProjectMetrics(projectId: string) {
