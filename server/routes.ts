@@ -259,5 +259,69 @@ export async function registerRoutes(app: Express): Promise<Express> {
     }
   });
 
+  // API Keys endpoints
+  app.get("/api/keys", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user || !user.projectId) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const keys = await storage.getApiKeys(user.projectId);
+
+      const formatted = keys.map((k) => ({
+        ...k,
+        createdAt: k.createdAt.toISOString(),
+      }));
+
+      res.json(formatted);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to fetch API keys" });
+    }
+  });
+
+  app.post("/api/keys", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user || !user.projectId) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const { name } = req.body;
+      if (!name || name.trim() === "") {
+        return res.status(400).json({ message: "API key name is required" });
+      }
+
+      const apiKey = await storage.createApiKey(user.projectId, name);
+
+      res.status(201).json({
+        ...apiKey,
+        createdAt: apiKey.createdAt.toISOString(),
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to create API key" });
+    }
+  });
+
+  app.delete("/api/keys/:id", authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user || !user.projectId) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const { id } = req.params;
+      const success = await storage.deleteApiKey(id, user.projectId);
+
+      if (!success) {
+        return res.status(404).json({ message: "API key not found" });
+      }
+
+      res.json({ message: "API key deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to delete API key" });
+    }
+  });
+
   return app;
 }

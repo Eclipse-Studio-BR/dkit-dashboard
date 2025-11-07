@@ -57,6 +57,16 @@ export const transactions = pgTable("transactions", {
   chain: text("chain").notNull(),
 });
 
+// API Keys
+export const apiKeys = pgTable("api_keys", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull(),
+  name: text("name").notNull(),
+  key: text("key").notNull().unique(),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at", { mode: 'date' }).notNull().default(sql`now()`),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
@@ -89,6 +99,12 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
   chainflipAddress: z.string().optional(),
 });
 
+export const insertApiKeySchema = createInsertSchema(apiKeys).pick({
+  name: true,
+}).extend({
+  name: z.string().min(1, "API key name is required"),
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -98,6 +114,9 @@ export type Project = typeof projects.$inferSelect;
 
 export type MetricPoint = typeof metricPoints.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
+
+export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+export type ApiKey = typeof apiKeys.$inferSelect;
 
 // API response types
 export interface MeResponse {
