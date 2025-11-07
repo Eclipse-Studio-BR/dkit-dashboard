@@ -44,7 +44,12 @@ export default function SettingsPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: SettingsForm) => {
-      return apiRequest("PATCH", "/api/project", data);
+      // Mark setup as completed if addresses are provided
+      const hasAddresses = data.thorName || data.mayaName || data.chainflipAddress;
+      return apiRequest("PATCH", "/api/project", {
+        ...data,
+        setupCompleted: hasAddresses ? "true" : undefined,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
@@ -138,7 +143,7 @@ export default function SettingsPage() {
                 name="thorName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>THORName</FormLabel>
+                    <FormLabel>THORChain Address</FormLabel>
                     <FormControl>
                       <Input placeholder="your-thorname" data-testid="input-thor-name" {...field} />
                     </FormControl>
@@ -154,7 +159,7 @@ export default function SettingsPage() {
                 name="mayaName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>MayaName</FormLabel>
+                    <FormLabel>Mayachain Address</FormLabel>
                     <FormControl>
                       <Input placeholder="your-mayaname" data-testid="input-maya-name" {...field} />
                     </FormControl>

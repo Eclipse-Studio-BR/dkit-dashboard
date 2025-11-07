@@ -7,21 +7,27 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  role: text("role").notNull().default("PARTNER"),
+  password: text("password"),
+  name: text("name").notNull(),
+  role: text("role").notNull().default(sql`'PARTNER'`),
   projectId: varchar("project_id"),
+  googleId: text("google_id"),
+  avatarUrl: text("avatar_url"),
+  createdAt: timestamp("created_at", { mode: 'date' }).notNull().default(sql`now()`),
+  updatedAt: timestamp("updated_at", { mode: 'date' }).notNull().default(sql`now()`),
 });
 
 // Projects table
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
+  name: text("name"),
   logoUrl: text("logo_url"),
   dappUrl: text("dapp_url"),
   btcAddress: text("btc_address"),
   thorName: text("thor_name"),
   mayaName: text("maya_name"),
   chainflipAddress: text("chainflip_address"),
+  setupCompleted: text("setup_completed").notNull().default("false"),
 });
 
 // Metric points (time-series data)
@@ -53,17 +59,20 @@ export const transactions = pgTable("transactions", {
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
+  name: true,
   email: true,
   password: true,
 }).extend({
+  name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
+  setupCompleted: true,
 }).extend({
-  name: z.string().min(1, "Project name is required"),
+  name: z.string().min(1, "Project name is required").optional(),
   logoUrl: z.string().optional(),
   dappUrl: z.string().optional().refine((val) => !val || (val.startsWith("https://") && z.string().url().safeParse(val).success), {
     message: "Must be a valid HTTPS URL or empty"

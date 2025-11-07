@@ -37,33 +37,40 @@ export async function registerRoutes(app: Express): Promise<Express> {
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
       console.log("[REGISTER] Request body:", JSON.stringify(req.body, null, 2));
-      
-      const { email, password, project } = req.body;
 
-      const userSchema = z.object({
-        email: z.string().email(),
-        password: z.string().min(6),
+      const { name, email, password, confirmPassword } = req.body;
+
+      const registerSchema = z.object({
+        name: z.string().min(1, "Name is required"),
+        email: z.string().email("Invalid email address"),
+        password: z.string().min(6, "Password must be at least 6 characters"),
+        confirmPassword: z.string(),
+      }).refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords don't match",
+        path: ["confirmPassword"],
       });
 
-      const userData = userSchema.parse({ email, password });
-      console.log("[REGISTER] User data validated:", { email: userData.email });
+      const userData = registerSchema.parse({ name, email, password, confirmPassword });
+      console.log("[REGISTER] User data validated:", { name: userData.name, email: userData.email });
 
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
 
-      console.log("[REGISTER] Project data received:", JSON.stringify(project, null, 2));
-      const projectData = insertProjectSchema.parse(project || {});
-      console.log("[REGISTER] Project data validated:", JSON.stringify(projectData, null, 2));
-      const newProject = await storage.createProject(projectData);
+      // Create an empty project
+      const newProject = await storage.createProject({});
 
       const hashedPassword = await bcrypt.hash(userData.password, 10);
-      const user = await storage.createUser({ email: userData.email, password: hashedPassword }, newProject.id);
+      const user = await storage.createUser({
+        name: userData.name,
+        email: userData.email,
+        password: hashedPassword
+      }, newProject.id);
 
       req.session.userId = user.id;
 
-      res.status(201).json({ 
+      res.status(201).json({
         user: { ...user, password: undefined },
         project: newProject,
       });
@@ -123,17 +130,18 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
       const project = user.projectId ? await storage.getProject(user.projectId) : null;
 
-      res.json({ 
+      res.json({
         user: { ...user, password: undefined },
         project: project || {
           id: "",
-          name: "",
+          name: null,
           logoUrl: null,
           dappUrl: null,
           btcAddress: null,
           thorName: null,
           mayaName: null,
           chainflipAddress: null,
+          setupCompleted: "false",
         },
       });
     } catch (error: any) {
@@ -148,7 +156,11 @@ export async function registerRoutes(app: Express): Promise<Express> {
         return res.status(404).json({ message: "Project not found" });
       }
 
-      const updates = insertProjectSchema.partial().parse(req.body);
+      const updateSchema = insertProjectSchema.partial().extend({
+        setupCompleted: z.string().optional(),
+      });
+
+      const updates = updateSchema.parse(req.body);
 
       const project = await storage.updateProject(user.projectId, updates);
 
