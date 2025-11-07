@@ -171,7 +171,19 @@ app.patch("/api/project", authMiddleware, async (req: AuthRequest, res: Response
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const updates = insertProjectSchema.partial().parse(req.body);
+    // Extract setupCompleted separately as it's not part of insertProjectSchema
+    const { setupCompleted, ...projectData } = req.body;
+    
+    // Parse project data if any fields are present
+    const updates: any = Object.keys(projectData).length > 0 
+      ? insertProjectSchema.partial().parse(projectData) 
+      : {};
+    
+    // Add setupCompleted if provided
+    if (setupCompleted !== undefined) {
+      updates.setupCompleted = setupCompleted;
+    }
+
     const project = await storage.updateProject(user.projectId, updates);
 
     if (!project) {
