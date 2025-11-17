@@ -1,6 +1,6 @@
-# dKit Partners Dashboard
+# Arqitech Partners Dashboard
 
-A partner dashboard for monitoring cross-chain swap metrics, transactions, and analytics.
+A partner dashboard for monitoring affiliate fees earnings, transactions, and analytics.
 
 ## 🚀 Quick Start
 
@@ -8,8 +8,8 @@ A partner dashboard for monitoring cross-chain swap metrics, transactions, and a
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd dkit-dashboard
+   git clone
+   cd arqitech-dashboard
    ```
 
 2. **Install dependencies**
@@ -22,12 +22,12 @@ A partner dashboard for monitoring cross-chain swap metrics, transactions, and a
    cp .env.example .env
    ```
    
-   Edit `.env` and add your Neon database URL:
+   Edit `.env` and add the Neon database URL:
    ```env
    DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
    SESSION_SECRET=<generate-a-random-secret>
    NODE_ENV=development
-   PORT=5000
+   PORT=3000
    ```
 
 4. **Run database migrations**
@@ -40,30 +40,7 @@ A partner dashboard for monitoring cross-chain swap metrics, transactions, and a
    ```
 
 6. **Open browser**
-   Navigate to `http://localhost:5000`
-
----
-
-## 📦 What Changed from Replit
-
-This project has been migrated from Replit to work with your own infrastructure:
-
-### ✅ Removed
-- ❌ Replit-specific Vite plugins (`@replit/vite-plugin-*`)
-- ❌ Google Cloud Storage integration (Replit object storage)
-- ❌ Replit configuration files (kept for reference only)
-
-### ✅ Added
-- ✨ Neon PostgreSQL database integration
-- ✨ Vercel deployment configuration (`vercel.json`)
-- ✨ Environment variable templates (`.env.example`)
-- ✨ Database migration files (`migrations/`)
-- ✨ Comprehensive deployment guide (`DEPLOYMENT_GUIDE.md`)
-
-### ✅ Updated
-- 🔧 Changed from `MemStorage` to `DbStorage` for production
-- 🔧 Updated `.gitignore` to exclude `.env` files
-- 🔧 Removed Google Cloud Storage dependency
+   Navigate to `http://localhost:3000`
 
 ---
 
@@ -72,7 +49,7 @@ This project has been migrated from Replit to work with your own infrastructure:
 The project uses PostgreSQL with the following tables:
 
 - **users** - User authentication and profiles
-- **projects** - Partner project information
+- **profile** - User Profile information
 - **metric_points** - Time-series metrics data
 - **transactions** - Transaction history
 
@@ -81,8 +58,6 @@ See `shared/schema.ts` for full schema definitions.
 ---
 
 ## 🚢 Deployment
-
-For detailed deployment instructions, see **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)**
 
 ### Quick Deploy to Vercel
 
@@ -154,30 +129,6 @@ dkit-dashboard/
 
 ---
 
-## 🔒 Security Considerations
-
-- ✅ Passwords are hashed with bcrypt
-- ✅ Sessions use secure cookies in production
-- ✅ Database connections use SSL
-- ✅ Environment variables not committed to git
-- ⚠️ Consider adding rate limiting for production
-- ⚠️ Consider implementing CSRF protection
-
----
-
-## 📝 TODO / Future Improvements
-
-- [ ] Add persistent session store (PostgreSQL or Redis)
-- [ ] Implement file upload functionality (if needed)
-- [ ] Add rate limiting middleware
-- [ ] Set up error monitoring (Sentry, etc.)
-- [ ] Add automated tests
-- [ ] Implement CSRF protection
-- [ ] Add password reset functionality
-- [ ] Set up CI/CD pipeline
-
----
-
 ## 🐛 Troubleshooting
 
 ### "DATABASE_URL is not set"
@@ -196,15 +147,6 @@ dkit-dashboard/
 
 ---
 
-## 📚 Documentation
-
-- [Deployment Guide](./DEPLOYMENT_GUIDE.md) - Step-by-step deployment instructions
-- [Design Guidelines](./design_guidelines.md) - UI/UX design principles
-- [Neon Docs](https://neon.tech/docs) - Database documentation
-- [Vercel Docs](https://vercel.com/docs) - Hosting documentation
-
----
-
 ## 🤝 Contributing
 
 1. Create a feature branch
@@ -219,11 +161,3 @@ dkit-dashboard/
 MIT
 
 ---
-
-## 🙋 Support
-
-For deployment issues, refer to the [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) troubleshooting section.
-
----
-
-**Built with ❤️ for dKit Partners**
