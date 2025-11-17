@@ -1,24 +1,23 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { insertProjectSchema, type MeResponse } from "@shared/schema";
+import { insertProjectSchema } from "@shared/schema";
 import { z } from "zod";
 import { LogoUploader } from "@/components/LogoUploader";
+import { useMe } from "@/hooks/use-me";
 
 type SettingsForm = z.infer<typeof insertProjectSchema>;
 
 export default function SettingsPage() {
   const { toast } = useToast();
 
-  const { data: meData, isLoading } = useQuery<MeResponse>({
-    queryKey: ["/api/me"],
-  });
+  const { data: meData, isLoading } = useMe();
 
   const form = useForm<SettingsForm>({
     resolver: zodResolver(insertProjectSchema),

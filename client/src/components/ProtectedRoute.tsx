@@ -1,7 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
-import type { MeResponse } from "@shared/schema";
+import { useMe } from "@/hooks/use-me";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,10 +9,7 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [, setLocation] = useLocation();
 
-  const { data, isLoading, error } = useQuery<MeResponse>({
-    queryKey: ["/api/me"],
-    retry: false,
-  });
+  const { data, isLoading, error } = useMe();
 
   useEffect(() => {
     if (!isLoading && (error || !data)) {

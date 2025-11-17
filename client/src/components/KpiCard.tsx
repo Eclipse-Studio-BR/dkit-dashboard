@@ -1,14 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import type { TimeRange } from "@/lib/api";
 
 interface KpiCardProps {
   title: string;
   value: string;
   btcEquivalent?: string;
   testId?: string;
-  timeRange?: "1D" | "7D" | "1M" | "3M" | "All";
-  onTimeRangeChange?: (range: "1D" | "7D" | "1M" | "3M" | "All") => void;
+  timeRange?: TimeRange;
+  onTimeRangeChange?: (range: TimeRange) => void;
   isLoading?: boolean;
 }
 
@@ -23,7 +24,7 @@ export function KpiCard({
 }: KpiCardProps) {
   const [isVisible, setIsVisible] = useState(true);
 
-  const timeRanges: Array<"1D" | "7D" | "1M" | "3M" | "All"> = ["1D", "7D", "1M", "3M", "All"];
+  const timeRanges: TimeRange[] = ["1D", "7D", "1M", "3M", "All"];
 
   return (
     <Card className="border-card-border relative">

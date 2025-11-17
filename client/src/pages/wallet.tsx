@@ -1,54 +1,23 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { Copy, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
-import type { ApiKey } from "@shared/schema";
-
-// API response type with serialized dates
-type ApiKeyResponse = Omit<ApiKey, "createdAt"> & { createdAt: string };
+import { useApiKeys } from "@/hooks/use-api-keys";
 
 export default function WalletPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [keyName, setKeyName] = useState("");
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const { keysQuery, createMutation } = useApiKeys();
 
-  const { data: apiKeys = [], isLoading } = useQuery<ApiKeyResponse[]>({
-    queryKey: ["/api/keys"],
-    staleTime: Infinity,
-  });
-
-  const createKeyMutation = useMutation({
-    mutationFn: async (name: string) => {
-      const res = await apiRequest("POST", "/api/keys", { name });
-      return await res.json() as ApiKeyResponse;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/keys"] });
-      setNewlyCreatedKey(data.key);
-      setKeyName("");
-      toast({
-        title: "API key created",
-        description: "Your new API key has been created successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Failed to create API key",
-        description: error.message || "Could not create API key",
-        variant: "destructive",
-      });
-    },
-  });
+  const apiKeys = keysQuery.data ?? [];
 
   const handleCreateKey = () => {
     if (!keyName.trim()) {
@@ -59,7 +28,23 @@ export default function WalletPage() {
       });
       return;
     }
-    createKeyMutation.mutate(keyName);
+    createMutation.mutate(keyName, {
+      onSuccess: (data) => {
+        setNewlyCreatedKey(data.key);
+        setKeyName("");
+        toast({
+          title: "API key created",
+          description: "Your new API key has been created successfully",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Failed to create API key",
+          description: error.message || "Could not create API key",
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   const handleCopyKey = (key: string) => {
@@ -95,7 +80,7 @@ export default function WalletPage() {
         <Button onClick={() => setIsCreateModalOpen(true)}>Create new Key</Button>
       </div>
 
-      {isLoading ? (
+      {keysQuery.isLoading ? (
         <div className="flex items-center justify-center min-h-[400px]">
           <p className="text-muted-foreground">Loading...</p>
         </div>
@@ -204,9 +189,9 @@ export default function WalletPage() {
                 </Button>
                 <Button
                   onClick={handleCreateKey}
-                  disabled={createKeyMutation.isPending}
+                  disabled={createMutation.isPending}
                 >
-                  {createKeyMutation.isPending ? "Creating..." : "Confirm"}
+                  {createMutation.isPending ? "Creating..." : "Confirm"}
                 </Button>
               </div>
             </div>

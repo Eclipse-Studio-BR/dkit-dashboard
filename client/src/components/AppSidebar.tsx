@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { LayoutDashboard, Key, Settings, HelpCircle, LogOut } from "lucide-react";
 import {
   Sidebar,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
-import type { MeResponse } from "@shared/schema";
+import { useMe } from "@/hooks/use-me";
 import dkitLogo from "@assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png";
 
 const navItems = [
@@ -27,9 +27,7 @@ const navItems = [
 export function AppSidebar() {
   const [location, setLocation] = useLocation();
 
-  const { data: meData } = useQuery<MeResponse>({
-    queryKey: ["/api/me"],
-  });
+  const { data: meData } = useMe();
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
