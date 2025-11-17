@@ -20,20 +20,34 @@ function RouteCard({ name, ticker, amount, change, logoUrl, showZero }: RouteCar
   return (
     <Card className="border-card-border">
       <CardContent className="p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 flex items-center justify-center">
-            <img
-              src={logoUrl}
-              alt={`${name} logo`}
-              className={`w-10 h-10 object-contain ${showZero ? 'blur-sm opacity-40' : ''}`}
-            />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img
+                src={logoUrl}
+                alt={`${name} logo`}
+                className={`w-10 h-10 object-contain ${showZero ? 'blur-sm opacity-40' : ''}`}
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className={`text-sm font-medium text-foreground ${showZero ? 'blur-sm opacity-40' : ''}`}>{name}</span>
+              <span className={`text-xs text-muted-foreground ${showZero ? 'blur-sm opacity-40' : ''}`}>{ticker}</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className={`text-sm font-medium text-foreground ${showZero ? 'blur-sm opacity-40' : ''}`}>{name}</span>
-            <span className={`text-xs text-muted-foreground ${showZero ? 'blur-sm opacity-40' : ''}`}>{ticker}</span>
+
+          <div className="text-right space-y-1">
+            <div className="text-lg font-bold font-tabular">{showZero ? '$0.00' : amount}</div>
+            <div className={`flex items-center gap-1 text-xs font-medium justify-end ${showZero ? 'text-muted-foreground' : isPositive ? "text-green-500" : "text-red-500"}`}>
+              {isPositive ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              {showZero ? '0.0' : Math.abs(change).toFixed(1)}%
+            </div>
           </div>
         </div>
-        <div className="space-y-1">
+
+        <div className="mt-3 md:hidden">
+          {/* Extra spacing removed for compact mobile cards */}
+        </div>
+        <div className="hidden md:block mt-3 space-y-1">
           <div className="text-lg font-bold font-tabular">{showZero ? '$0.00' : amount}</div>
           <div className={`flex items-center gap-1 text-xs font-medium ${showZero ? 'text-muted-foreground' : isPositive ? "text-green-500" : "text-red-500"}`}>
             {isPositive ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
