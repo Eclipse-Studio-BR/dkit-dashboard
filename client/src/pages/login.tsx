@@ -49,21 +49,21 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-background/95 p-4">
-      <div className="p-6">
-        <img 
-          src="/logo_dark.png" 
-          alt="Arqitech" 
-          className="h-12 w-auto object-contain"
-        />
-      </div>
-      
       <div className="flex-1 flex items-center justify-center">
-        <Card className="w-full max-w-md border-card-border bg-card/50 backdrop-blur-sm">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Login</CardTitle>
-            <CardDescription>Login to access the dashboard</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div className="w-full max-w-md space-y-8">
+          <div className="flex justify-center">
+            <img 
+              src="/logo_dark.png" 
+              alt="Arqitech" 
+              className="h-12 w-auto object-contain"
+            />
+          </div>
+          <Card className="w-full border-card-border bg-card/50 backdrop-blur-sm">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-bold">Login</CardTitle>
+              <CardDescription>Login to access the dashboard</CardDescription>
+            </CardHeader>
+            <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -116,7 +116,6 @@ export default function LoginPage() {
                     Register
                   </button>
                 </div>
-                
                 <div className="text-center">
                   <button
                     type="button"
@@ -128,7 +127,8 @@ export default function LoginPage() {
               </form>
             </Form>
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </div>
     </div>
   );
