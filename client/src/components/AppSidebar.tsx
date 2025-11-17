@@ -15,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useMe } from "@/hooks/use-me";
-import dkitLogo from "@assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -47,8 +46,8 @@ export function AppSidebar() {
       <SidebarHeader className="p-6">
         <div className="flex justify-start">
           <img 
-            src={dkitLogo} 
-            alt="dKit" 
+            src="/logo_dark.png" 
+            alt="Arqitech" 
             className="h-10 w-auto object-contain"
             style={{ maxWidth: '200px' }}
           />

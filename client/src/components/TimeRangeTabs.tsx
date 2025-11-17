@@ -14,10 +14,10 @@ export function TimeRangeTabs({ value, onChange }: TimeRangeTabsProps) {
       {ranges.map((range) => (
         <Button
           key={range}
-          variant={value === range ? "default" : "ghost"}
+          variant="ghost"
           size="sm"
           onClick={() => onChange(range)}
-          className="h-7 px-3 text-xs font-medium"
+          className={`h-7 px-3 text-xs font-medium ${value === range ? "bg-[var(--accent-yellow-gradient)] text-[var(--active-toggle-fg)] border border-primary-border shadow-sm" : "bg-transparent"}`}
           data-testid={`button-range-${range.toLowerCase()}`}
         >
           {range}

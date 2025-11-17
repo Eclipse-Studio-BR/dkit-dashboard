@@ -14,48 +14,50 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 240 4% 95%;
-  --foreground: 240 6% 10%;
-  --border: 240 4% 82%;
-  --card: 240 4% 92%;
+  --background: 220 10% 96%;
+  --foreground: 240 6% 12%;
+  --border: 220 6% 82%;
+  --card: 220 10% 92%;
   --card-foreground: 240 6% 12%;
-  --card-border: 240 4% 85%;
+  --card-border: 220 8% 82%;
 
-  --sidebar: 240 4% 89%;
+  --sidebar: 220 12% 94%;
   --sidebar-foreground: 240 6% 14%;
-  --sidebar-border: 240 4% 80%;
-  --sidebar-primary: 51 100% 57%;
+  --sidebar-border: 220 8% 82%;
+  --sidebar-primary: 40 55% 52%;
   --sidebar-primary-foreground: 240 10% 4%;
-  --sidebar-accent: 51 100% 57%;
+  --sidebar-accent: 40 55% 52%;
   --sidebar-accent-foreground: 240 10% 4%;
-  --sidebar-ring: 51 100% 57%;
+  --sidebar-ring: 40 55% 52%;
 
-  --popover: 240 4% 86%;
-  --popover-foreground: 240 6% 15%;
-  --popover-border: 240 4% 78%;
+  --popover: 220 12% 94%;
+  --popover-foreground: 240 6% 16%;
+  --popover-border: 220 8% 82%;
 
-  --primary: 51 100% 57%;
-  --primary-foreground: 240 10% 4%;
+  --primary: 40 55% 52%;
+  --primary-foreground: 0 0% 10%;
 
-  --secondary: 240 5% 80%;
-  --secondary-foreground: 240 6% 18%;
+  --secondary: 220 8% 90%;
+  --secondary-foreground: 240 6% 25%;
 
-  --muted: 240 6% 88%;
-  --muted-foreground: 240 5% 40%;
+  --muted: 220 8% 88%;
+  --muted-foreground: 220 6% 40%;
 
-  --accent: 240 8% 86%;
+  --accent: 220 10% 86%;
   --accent-foreground: 240 6% 16%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 240 5% 70%;
-  --ring: 51 100% 57%;
-  --chart-1: 51 100% 57%;
-  --chart-2: 45 95% 55%;
+  --input: 220 7% 78%;
+  --ring: 40 55% 52%;
+  --chart-1: 40 55% 60%;
+  --chart-2: 48 100% 73%;
   --chart-3: 220 85% 56%;
   --chart-4: 340 82% 62%;
   --chart-5: 160 75% 48%;
+
+  --app-bg: linear-gradient(135deg, #f7f8fb 0%, #e5e7eb 100%);
 
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
@@ -87,6 +89,18 @@
   --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* Gold gradient palette */
+  --accent-yellow-start: #C89A3F;
+  --accent-yellow-end: #FFF1B0;
+  --accent-yellow-gradient: linear-gradient(90deg, #C89A3F 0%, #FFF1B0 100%);
+  --ring-accent: rgba(200,154,63,0.35);
+  --accent-yellow: #C89A3F;
+  --accent-yellow-soft: #FFF1B0;
+  --active-toggle-fg: #0b0d12;
+  --button-primary-foreground: #0b0d12;
+  /* Light background gradient: #BFC4CA at 45% → #E6EAEE at 100% */
+  --app-bg: linear-gradient(135deg, #BFC4CA 45%, #E6EAEE 100%);
 }
 
 .dark {
@@ -106,11 +120,16 @@
   --glass-border: rgba(255,255,255,0.12);
   --glass-border-strong: rgba(255,255,255,0.18);
   --glass-inner: rgba(255,255,255,0.08);
-  --ring-accent: rgba(255,226,36,0.35);
+  --ring-accent: rgba(200,154,63,0.35);
   
-  /* Yellow accent colors */
-  --accent-yellow: #FFE224;
-  --accent-yellow-soft: #FFF3A3;
+  /* Yellow accent colors -> gold gradient */
+  --accent-yellow: #C89A3F;
+  --accent-yellow-start: #C89A3F;
+  --accent-yellow-end: #FFF1B0;
+  --accent-yellow-soft: #FFF1B0;
+  --accent-yellow-gradient: linear-gradient(90deg, #C89A3F 0%, #FFF1B0 100%);
+  --active-toggle-fg: #ffffff;
+  --button-primary-foreground: #ffffff;
 
   --background: 240 6% 6%;
   --foreground: 0 0% 95%;
@@ -122,17 +141,17 @@
   --sidebar: 240 6% 9%;
   --sidebar-foreground: 0 0% 90%;
   --sidebar-border: 240 4% 14%;
-  --sidebar-primary: 51 100% 57%;
+  --sidebar-primary: 40 55% 52%;
   --sidebar-primary-foreground: 240 10% 4%;
-  --sidebar-accent: 51 100% 57%;
+  --sidebar-accent: 40 55% 52%;
   --sidebar-accent-foreground: 240 10% 4%;
-  --sidebar-ring: 51 100% 57%;
+  --sidebar-ring: 40 55% 52%;
 
   --popover: 240 5% 12%;
   --popover-foreground: 0 0% 92%;
   --popover-border: 240 4% 20%;
 
-  --primary: 51 100% 57%;
+  --primary: 40 55% 52%;
   --primary-foreground: 240 10% 4%;
 
   --secondary: 240 5% 20%;
@@ -148,12 +167,13 @@
   --destructive-foreground: 0 0% 100%;
 
   --input: 240 5% 20%;
-  --ring: 51 100% 57%;
-  --chart-1: 51 100% 65%;
-  --chart-2: 45 95% 63%;
+  --ring: 40 55% 52%;
+  --chart-1: 40 55% 60%;
+  --chart-2: 48 100% 73%;
   --chart-3: 220 85% 64%;
   --chart-4: 340 82% 70%;
   --chart-5: 160 75% 56%;
+  --app-bg: linear-gradient(to bottom, hsl(240 6% 6%), hsl(240 5% 9%));
 
   --shadow-2xs: 0px 2px 0px 0px hsl(240 5% 0% / 0.08);
   --shadow-xs: 0px 2px 0px 0px hsl(240 5% 0% / 0.12);
@@ -181,7 +201,7 @@
 
   body {
     @apply font-sans antialiased text-foreground;
-    background: linear-gradient(to bottom, hsl(240 6% 6%), hsl(240 5% 9%));
+    background: var(--app-bg);
     min-height: 100vh;
     font-feature-settings: "tnum";
   }
@@ -214,7 +234,7 @@
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.35), 0 0 0 3px rgba(255,226,36,0.12), inset 0 1px 0 var(--glass-inner);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35), 0 0 0 3px rgba(200,154,63,0.12), inset 0 1px 0 var(--glass-inner);
   }
 
   .glass-tooltip {
@@ -231,7 +251,7 @@
   }
 
   .gradient-text-yellow {
-    background: linear-gradient(90deg, #FFE224, #FFF3A3);
+    background: var(--accent-yellow-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
