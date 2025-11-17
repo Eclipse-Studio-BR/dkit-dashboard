@@ -44,7 +44,7 @@ export default function OnboardingPage() {
       await apiRequest("POST", "/api/auth/register", data);
       toast({
         title: "Account created successfully",
-        description: "Welcome to dKiT Partners Dashboard",
+        description: "Welcome to Arqitech Dashboard",
       });
       setLocation("/dashboard");
     } catch (error: any) {
@@ -63,7 +63,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-card-border">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Welcome to dKiT Partners</CardTitle>
+          <CardTitle className="text-2xl font-bold">Welcome to Arqitech</CardTitle>
           <CardDescription>
             Create your account to get started
           </CardDescription>

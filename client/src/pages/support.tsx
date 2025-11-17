@@ -17,9 +17,9 @@ export default function SupportPage() {
         </CardHeader>
         <CardContent>
           <Button asChild data-testid="link-contact-support">
-            <a href="mailto:support@dkit.partners" className="inline-flex items-center gap-2">
+            <a href="mailto:support@arqitech.com" className="inline-flex items-center gap-2">
               <Mail className="w-4 h-4" />
-              support@dkit.partners
+              support@arqitech.com
             </a>
           </Button>
         </CardContent>

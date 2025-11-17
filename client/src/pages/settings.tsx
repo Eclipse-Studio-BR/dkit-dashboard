@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { insertProjectSchema } from "@shared/schema";
 import { z } from "zod";
-import { LogoUploader } from "@/components/LogoUploader";
 import { useMe } from "@/hooks/use-me";
 
 type SettingsForm = z.infer<typeof insertProjectSchema>;
@@ -82,15 +81,15 @@ export default function SettingsPage() {
     <div className="max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage your project details and tracking IDs</p>
+        <p className="text-sm text-muted-foreground mt-1">Manage your profile details and tracking IDs</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card className="border-card-border">
             <CardHeader>
-              <CardTitle>Project Details</CardTitle>
-              <CardDescription>Basic information about your project</CardDescription>
+              <CardTitle>Profile Details</CardTitle>
+              <CardDescription>Basic information about your profile</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -98,31 +97,9 @@ export default function SettingsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project Name</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="My DeFi Project" data-testid="input-project-name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div>
-                <label className="text-sm font-medium mb-2 block">Project Logo</label>
-                <LogoUploader 
-                  currentLogoUrl={meData?.project?.logoUrl}
-                  onUploadComplete={(logoUrl) => {
-                    form.setValue("logoUrl", logoUrl);
-                  }}
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="dappUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>dApp Link</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.app" data-testid="input-dapp-url" {...field} />
+                      <Input placeholder="My Project" data-testid="input-project-name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
