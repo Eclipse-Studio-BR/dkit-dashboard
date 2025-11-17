@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useRoute, useLocation } from "wouter";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { Copy, ChevronLeft, Trash2, AlertCircle, X } from "lucide-react";
-import type { ApiKey } from "@shared/schema";
+import { useApiKeys } from "@/hooks/use-api-keys";
 
 // Fee tier type
 type FeeTier = {
@@ -44,9 +42,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-// API response type with serialized dates
-type ApiKeyResponse = Omit<ApiKey, "createdAt"> & { createdAt: string };
 
 // Asset lists per chain
 const MAYA_ASSETS = ["CACAO", "BTC", "ZEC", "RUNE", "ETH", "ETH.USDT", "DASH", "ETH.USDC", "XRD", "KUJI"];
@@ -141,9 +136,9 @@ export default function ApiKeyDetailsPage() {
   const [, params] = useRoute("/api-keys/:id");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<"affiliate" | "settings">("affiliate");
+  const { keysQuery, deleteMutation } = useApiKeys();
 
   // Form states for each chain
   const [thorchainAsset, setThorchainAsset] = useState("RUNE");
@@ -158,34 +153,9 @@ export default function ApiKeyDetailsPage() {
 
   const keyId = params?.id;
 
-  const { data: apiKeys = [] } = useQuery<ApiKeyResponse[]>({
-    queryKey: ["/api/keys"],
-    staleTime: Infinity,
-  });
+  const apiKeys = keysQuery.data ?? [];
 
   const apiKey = apiKeys.find((k) => k.id === keyId);
-
-  const deleteKeyMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await apiRequest("DELETE", `/api/keys/${id}`, {});
-      return await res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/keys"] });
-      toast({
-        title: "API key deleted",
-        description: "The API key has been deleted successfully",
-      });
-      setLocation("/api-keys");
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Failed to delete API key",
-        description: error.message || "Could not delete API key",
-        variant: "destructive",
-      });
-    },
-  });
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
@@ -197,7 +167,22 @@ export default function ApiKeyDetailsPage() {
 
   const handleDelete = () => {
     if (keyId) {
-      deleteKeyMutation.mutate(keyId);
+      deleteMutation.mutate(keyId, {
+        onSuccess: () => {
+          toast({
+            title: "API key deleted",
+            description: "The API key has been deleted successfully",
+          });
+          setLocation("/api-keys");
+        },
+        onError: (error: any) => {
+          toast({
+            title: "Failed to delete API key",
+            description: error.message || "Could not delete API key",
+            variant: "destructive",
+          });
+        },
+      });
     }
   };
 
@@ -248,6 +233,14 @@ export default function ApiKeyDetailsPage() {
       setMayaFeeTiers(updateFn(mayaFeeTiers));
     }
   };
+
+  if (keysQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   if (!apiKey) {
     return (

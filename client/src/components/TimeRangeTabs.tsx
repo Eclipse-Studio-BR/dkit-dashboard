@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-
-type TimeRange = "1D" | "7D" | "1M" | "3M" | "All";
+import type { TimeRange } from "@/lib/api";
 
 interface TimeRangeTabsProps {
   value: TimeRange;

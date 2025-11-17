@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/KpiCard";
 import { MetricToggle } from "@/components/MetricToggle";
@@ -9,7 +9,10 @@ import { TransactionsTable } from "@/components/TransactionsTable";
 import { TopRoutes } from "@/components/TopRoutes";
 import SetupModal from "@/components/SetupModal";
 import { Button } from "@/components/ui/button";
-import type { MetricsResponse, Transaction, MeResponse } from "@shared/schema";
+import { useMe } from "@/hooks/use-me";
+import { useMetrics } from "@/hooks/use-metrics";
+import { useTransactions } from "@/hooks/use-transactions";
+import type { TimeRange } from "@/lib/api";
 import { useLocation } from "wouter";
 import { X, AlertCircle } from "lucide-react";
 
@@ -17,19 +20,17 @@ export default function DashboardPage() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const [metric, setMetric] = useState<"fees" | "volume">("fees");
-  const [timeRange, setTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("7D");
+  const [timeRange, setTimeRange] = useState<TimeRange>("7D");
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
   // Separate timeframes for each KPI
-  const [volumeTimeRange, setVolumeTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("All");
-  const [feesTimeRange, setFeesTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("All");
-  const [transactionsTimeRange, setTransactionsTimeRange] = useState<"1D" | "7D" | "1M" | "3M" | "All">("All");
+  const [volumeTimeRange, setVolumeTimeRange] = useState<TimeRange>("All");
+  const [feesTimeRange, setFeesTimeRange] = useState<TimeRange>("All");
+  const [transactionsTimeRange, setTransactionsTimeRange] = useState<TimeRange>("All");
 
   // Fetch user/project data to check setup status
-  const { data: meResponse } = useQuery<MeResponse>({
-    queryKey: ["/api/me"],
-  });
+  const { data: meResponse } = useMe();
 
   // Check setup status before fetching data
   const project = meResponse?.project;
@@ -40,83 +41,33 @@ export default function DashboardPage() {
   // Only fetch data if addresses are configured
   const shouldFetchData = !addressesNotSet && !needsSetup;
 
-  const getTimeRangeParams = (range: typeof timeRange) => {
-    const now = new Date();
-    const to = now.toISOString();
-    let from: string;
-
-    switch (range) {
-      case "1D":
-        from = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-        break;
-      case "7D":
-        from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        break;
-      case "1M":
-        from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        break;
-      case "3M":
-        from = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
-        break;
-      case "All":
-      default:
-        from = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
-        break;
-    }
-
-    return `?from=${from}&to=${to}`;
-  };
-
   // Metrics query for the chart
-  const { data: metricsData, isLoading: metricsLoading, isFetching: metricsFetching } = useQuery<MetricsResponse>({
-    queryKey: ["/api/metrics", timeRange],
-    enabled: shouldFetchData,
-    queryFn: async () => {
-      const params = getTimeRangeParams(timeRange);
-      const response = await fetch(`/api/metrics${params}`);
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      return response.json();
-    },
-  });
+  const {
+    data: metricsData,
+    isLoading: metricsLoading,
+    isFetching: metricsFetching,
+  } = useMetrics(timeRange, { enabled: shouldFetchData, queryKeyPrefix: "chart" });
 
   // Separate queries for each KPI
-  const { data: volumeData, isFetching: volumeFetching } = useQuery<MetricsResponse>({
-    queryKey: ["/api/metrics", "volume", volumeTimeRange],
+  const { data: volumeData, isFetching: volumeFetching } = useMetrics(volumeTimeRange, {
     enabled: shouldFetchData,
-    queryFn: async () => {
-      const params = getTimeRangeParams(volumeTimeRange);
-      const response = await fetch(`/api/metrics${params}`);
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      return response.json();
-    },
+    queryKeyPrefix: "volume",
   });
 
-  const { data: feesData, isFetching: feesFetching } = useQuery<MetricsResponse>({
-    queryKey: ["/api/metrics", "fees", feesTimeRange],
+  const { data: feesData, isFetching: feesFetching } = useMetrics(feesTimeRange, {
     enabled: shouldFetchData,
-    queryFn: async () => {
-      const params = getTimeRangeParams(feesTimeRange);
-      const response = await fetch(`/api/metrics${params}`);
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      return response.json();
-    },
+    queryKeyPrefix: "fees",
   });
 
-  const { data: transactionsData, isFetching: transactionsFetching } = useQuery<MetricsResponse>({
-    queryKey: ["/api/metrics", "transactions", transactionsTimeRange],
+  const { data: transactionsData, isFetching: transactionsFetching } = useMetrics(transactionsTimeRange, {
     enabled: shouldFetchData,
-    queryFn: async () => {
-      const params = getTimeRangeParams(transactionsTimeRange);
-      const response = await fetch(`/api/metrics${params}`);
-      if (!response.ok) throw new Error("Failed to fetch metrics");
-      return response.json();
-    },
+    queryKeyPrefix: "transactions",
   });
 
-  const { data: transactions, isLoading: transactionsLoading } = useQuery<Transaction[]>({
-    queryKey: ["/api/transactions"],
-    enabled: shouldFetchData,
-  });
+  const {
+    data: transactions,
+    isLoading: transactionsLoading,
+  } = useTransactions(undefined, shouldFetchData);
 
   const chartData = metricsData?.series.map((point) => ({
     t: point.t,
