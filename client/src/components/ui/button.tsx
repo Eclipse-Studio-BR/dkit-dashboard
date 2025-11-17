@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground border border-primary-border",
+          "bg-[var(--accent-yellow-gradient)] text-[var(--button-primary-foreground)] border border-primary-border shadow-[0_10px_30px_-16px_rgba(200,154,63,0.75)]",
         destructive:
           "bg-destructive text-destructive-foreground border border-destructive-border",
         outline:
@@ -20,7 +20,7 @@ const buttonVariants = cva(
           " border [border-color:var(--button-outline)]  shadow-xs active:shadow-none ",
         secondary: "border bg-secondary text-secondary-foreground border border-secondary-border ",
         // Add a transparent border so that when someone toggles a border on later, it doesn't shift layout/size.
-        ghost: "border border-transparent",
+        ghost: "border border-transparent text-foreground/80 hover:text-foreground",
       },
       // Heights are set as "min" heights, because sometimes Ai will place large amount of content
       // inside buttons. With a min-height they will look appropriate with small amounts of content,

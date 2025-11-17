@@ -12,16 +12,19 @@ interface ProtectedLayoutProps {
 export function ProtectedLayout({ children }: ProtectedLayoutProps) {
   return (
     <ProtectedRoute>
-      <div className="flex flex-col h-screen w-full">
-        <div className="bg-blue-900/30 border-b border-blue-500/50 px-4 py-2">
-          <div className="flex items-center justify-center gap-2 text-sm text-blue-200">
+      <div className="flex flex-col min-h-screen w-full">
+        <div
+          className="border-b px-4 py-2"
+          style={{ background: "var(--accent-yellow-gradient)" }}
+        >
+          <div className="flex items-center justify-center gap-2 text-sm text-[#0b0d12] font-medium">
             <AlertTriangle className="w-4 h-4" />
-            <span>dKit Partners Dashboard alpha version. In Development.</span>
+            <span>Arqitech Dashboard alpha version. In Development.</span>
           </div>
         </div>
         <AppHeader />
-        <main className="flex-1 overflow-auto">
-          <div className="p-8">{children}</div>
+        <main className="flex-1 w-full">
+          <div className="p-4 md:p-8 space-y-6">{children}</div>
         </main>
       </div>
     </ProtectedRoute>

@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
-import { LayoutDashboard, Key, Settings, HelpCircle, ChevronDown, LogOut } from "lucide-react";
+import { LayoutDashboard, Key, Settings, HelpCircle, ChevronDown, LogOut, Sun, Moon, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { apiRequest } from "@/lib/queryClient";
 import { useMe } from "@/hooks/use-me";
-import dkitLogo from "@assets/tmAkfS22mCPeHBTusOxQMQyKNe4_1762386813472.png";
+import { useEffect, useMemo, useState } from "react";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -23,6 +23,10 @@ const navItems = [
 
 export function AppHeader() {
   const [location, setLocation] = useLocation();
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+    return (localStorage.getItem("theme") as "light" | "dark" | null) || "light";
+  });
 
   const { data: meData } = useMe();
 
@@ -39,17 +43,37 @@ export function AppHeader() {
     logoutMutation.mutate();
   };
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const logoSrc = useMemo(() => (theme === "dark" ? "/logo_dark.png" : "/logo_light.png"), [theme]);
+  const logoMobileSrc = useMemo(() => (theme === "dark" ? "/logo_dark_mobile.png" : "/logo_white_mobile.png"), [theme]);
+
   return (
-    <header className="border-b border-border bg-background">
+    <header className="border-b border-border" style={{ background: "var(--app-bg)" }}>
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-8">
-          <img
-            src={dkitLogo}
-            alt="dKit"
-            className="h-8 w-auto object-contain"
-            style={{ maxWidth: '150px' }}
-          />
-          <nav className="flex items-center gap-1">
+          <div className="flex items-center">
+            <img
+              src={logoSrc}
+              alt="Arqitech"
+              className="hidden md:block h-9 w-auto object-contain -mt-[12px]"
+              style={{ maxWidth: '150px' }}
+            />
+            <img
+              src={logoMobileSrc}
+              alt="Arqitech"
+              className="md:hidden h-9 w-auto object-contain"
+            />
+          </div>
+          <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.path;
@@ -70,32 +94,91 @@ export function AppHeader() {
         </div>
 
         {meData && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-semibold">
-                  {meData.user.email.charAt(0).toUpperCase()}
-                </div>
-                <span>Account</span>
-                <ChevronDown className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span className="font-medium">{meData.project?.name || meData.user.name}</span>
-                  <span className="text-xs text-muted-foreground font-normal">
-                    {meData.user.email}
-                  </span>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} disabled={logoutMutation.isPending}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Toggle theme"
+              onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+
+            <div className="hidden md:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <img
+                      src="/user.png"
+                      alt="User avatar"
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                    <span>Account</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{meData.project?.name || meData.user.name}</span>
+                    <span className="text-xs text-muted-foreground font-normal">
+                        {meData.user.email}
+                      </span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} disabled={logoutMutation.isPending} className="text-[#D52941]">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <div className="md:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="Open menu">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{meData.project?.name || meData.user.name}</span>
+                      <span className="text-xs text-muted-foreground font-normal">
+                        {meData.user.email}
+                      </span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location === item.path;
+                    return (
+                      <DropdownMenuItem
+                        key={item.path}
+                        onClick={() => setLocation(item.path)}
+                        className={isActive ? "font-semibold" : ""}
+                      >
+                        <Icon className="h-4 w-4 mr-2" />
+                        {item.label}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    disabled={logoutMutation.isPending}
+                    className="text-[#D52941]"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         )}
       </div>
     </header>
